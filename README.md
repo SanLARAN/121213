@@ -12,7 +12,9 @@
 
 Данные живут в `localStorage` браузера (GitHub Pages не даёт свой сервер и базу).
 
-## Деплой
+## Деплой на GitHub Pages
 
-Workflow `.github/workflows/pages.yml` публикует сайт на GitHub Pages.
-В репозитории: Settings → Pages → Source: **GitHub Actions**.
+1. Settings → Pages
+2. Source: **Deploy from a branch**
+3. Branch: `arena/019ff242-121213` (или `main` после merge), folder `/ (root)`
+4. Сохраните. Сайт: https://sanlaran.github.io/121213/
