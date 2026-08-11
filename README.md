@@ -21,7 +21,31 @@ cp .env.example .env
 # ADMIN_CHAT_ID=твой_telegram_id   # необязательно
 ```
 
-3. Установи зависимости и стартуй:
+3. Установи зависимости и стартуй.
+
+### Windows (PowerShell)
+
+Не копируй ссылки из чата. Файл называется просто `bot.py`.
+
+```powershell
+cd C:\Users\lol\121213
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+copy .env.example .env
+notepad .env
+python bot.py
+```
+
+Если `Activate.ps1` ругается на политику:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+Либо просто дважды кликни **`start.bat`** в папке проекта.
+
+### Linux / macOS
 
 ```bash
 python3 -m venv .venv
