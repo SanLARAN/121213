@@ -11,19 +11,19 @@ from dotenv import load_dotenv
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    LabeledPrice,
     Update,
 )
 from telegram.constants import ParseMode
+from telegram.error import NetworkError, TimedOut
 from telegram.ext import (
     Application,
     CallbackQueryHandler,
     CommandHandler,
     ContextTypes,
     MessageHandler,
-    PreCheckoutQueryHandler,
     filters,
 )
+from telegram.request import HTTPXRequest
 
 from catalog import BRAND, CATEGORIES, PRODUCTS, TAGLINE, by_category, format_price, get_product
 
@@ -408,13 +408,44 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 
+def _proxy() -> str | None:
+    for key in ("TELEGRAM_PROXY", "HTTPS_PROXY", "HTTP_PROXY", "ALL_PROXY"):
+        val = (os.getenv(key) or "").strip()
+        if val:
+            return val
+    return None
+
+
 def main() -> None:
     token = os.getenv("BOT_TOKEN")
     if not token or token == "your_telegram_bot_token_here":
         raise SystemExit(
             "Нет BOT_TOKEN. Создай бота у @BotFather, положи токен в .env"
         )
-    app = Application.builder().token(token).build()
+
+    proxy = _proxy()
+    request = HTTPXRequest(
+        connect_timeout=40.0,
+        read_timeout=40.0,
+        write_timeout=40.0,
+        pool_timeout=40.0,
+        proxy=proxy,
+    )
+    if proxy:
+        log.info("прокси: %s", proxy.split("@")[-1])
+    else:
+        log.info("прокси нет — если Timed out, включи VPN или TELEGRAM_PROXY в .env")
+
+    builder = Application.builder().token(token).request(request)
+    get_updates = HTTPXRequest(
+        connect_timeout=40.0,
+        read_timeout=40.0,
+        write_timeout=40.0,
+        pool_timeout=40.0,
+        proxy=proxy,
+    )
+    builder = builder.get_updates_request(get_updates)
+    app = builder.build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_cmd))
     app.add_handler(CommandHandler("catalog", catalog_cmd))
@@ -422,7 +453,17 @@ def main() -> None:
     app.add_handler(CallbackQueryHandler(on_cb))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_text))
     log.info("UNDR bot polling…")
-    app.run_polling(allowed_updates=Update.ALL_TYPES)
+    try:
+        app.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
+    except (TimedOut, NetworkError) as exc:
+        raise SystemExit(
+            "Telegram API недоступен (таймаут).\n"
+            "Из РФ обычно нужен VPN на весь ПК или локальный прокси.\n"
+            "В .env добавь, например:\n"
+            "  TELEGRAM_PROXY=socks5://127.0.0.1:10808\n"
+            "или http://127.0.0.1:7890  (порт смотри в Clash / v2rayN / Hiddify)\n"
+            f"детали: {exc}"
+        ) from exc
 
 
 if __name__ == "__main__":

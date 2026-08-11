@@ -56,6 +56,31 @@ python bot.py
 
 4. Открой бота в Telegram → `/start`.
 
+### Если `Timed out` / `ConnectTimeout`
+
+Из России `api.telegram.org` часто режется. Бот должен ходить в API **через VPN или локальный прокси**.
+
+1. Включи VPN на весь Windows **или** клиент (Hiddify / Clash / v2rayN) с локальным портом.
+2. В `.env` добавь порт из клиента, например:
+
+```
+TELEGRAM_PROXY=socks5://127.0.0.1:10808
+```
+
+или
+
+```
+TELEGRAM_PROXY=http://127.0.0.1:7890
+```
+
+3. Снова: `python -m pip install -r requirements.txt` и `python bot.py`.
+
+Проверка в PowerShell (должен ответить не таймаутом):
+
+```powershell
+curl.exe -I --max-time 15 https://api.telegram.org
+```
+
 ## Веб-витрина
 
 ```bash
