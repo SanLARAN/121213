@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Калькулятор фэнтези Dota 2 · TI 2026</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+<style>
+:root{
+  --bg:#0e1013; --card:#161a22; --card2:#1b2029; --line:#2a3040; --line2:#39415a;
+  --text:#e9e7e1; --muted:#929aab; --gold:#d9b45b; --gold2:#f0d489;
+  --red:#e0565e; --blue:#5a9bf8; --green:#57c26a; --dim:#5a6274;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding-bottom:60px}
+body::before{content:"";position:fixed;inset:0;background:
+ radial-gradient(1200px 500px at 20% -10%, rgba(217,180,91,.07), transparent 60%),
+ radial-gradient(900px 400px at 90% 0%, rgba(90,155,248,.05), transparent 60%);pointer-events:none}
+main,header{position:relative}
+a{color:var(--blue)}
+h1,h2,h3{margin:0;font-weight:700}
+header{position:sticky;top:0;z-index:50;background:rgba(14,16,19,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.head-in{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.logo{font-size:17px;letter-spacing:.06em;font-weight:800;text-transform:uppercase}
+.logo .gold{color:var(--gold)}
+.logo small{display:block;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.14em}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap}
+nav.tabs button{background:var(--card);border:1px solid var(--line);color:var(--muted);padding:8px 14px;border-radius:9px;cursor:pointer;font-size:14px;font-weight:600}
+nav.tabs button:hover{color:var(--text);border-color:var(--line2)}
+nav.tabs button.active{background:linear-gradient(180deg,#2a2417,#1d1a12);border-color:var(--gold);color:var(--gold2)}
+main{max-width:1200px;margin:0 auto;padding:18px 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.card>h2{font-size:16px;letter-spacing:.04em;text-transform:uppercase;color:var(--gold2);margin-bottom:4px}
+.sub{color:var(--muted);font-size:13px;margin:2px 0 12px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:4px 0 12px}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:9px;overflow:hidden}
+.seg button{background:var(--card);border:0;color:var(--muted);padding:7px 12px;cursor:pointer;font-size:13px;font-weight:600}
+.seg button.active{background:var(--gold);color:#14110a}
+.btn{background:var(--card2);border:1px solid var(--line2);color:var(--text);padding:7px 13px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:600}
+.btn:hover{border-color:var(--gold);color:var(--gold2)}
+.btn.gold{background:linear-gradient(180deg,#e6c470,#c69b3f);border-color:#e6c470;color:#181206}
+.btn.gold:hover{filter:brightness(1.06);color:#181206}
+.btn.danger:hover{border-color:var(--red);color:var(--red)}
+.btn.mini{padding:4px 9px;font-size:12px;border-radius:7px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.banner-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.banner-card h3{font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--card2);border:1px solid var(--line2);color:var(--muted)}
+.tag.red{color:var(--red);border-color:rgba(224,86,94,.4)}
+.tag.blue{color:var(--blue);border-color:rgba(90,155,248,.4)}
+.tag.green{color:var(--green);border-color:rgba(87,194,106,.4)}
+.names{display:flex;gap:8px;margin:10px 0}
+input,select{background:#10131a;border:1px solid var(--line2);color:var(--text);border-radius:8px;padding:7px 9px;font-size:14px;font-family:inherit}
+input:focus,select:focus{outline:none;border-color:var(--gold)}
+input[type=number]{width:100%;min-width:0}
+.names input{flex:1;min-width:80px}
+.emblem{display:grid;grid-template-columns:12px minmax(120px,1.4fr) 86px minmax(130px,1fr) 74px;gap:7px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line)}
+.emblem:last-child{border-bottom:0}
+.dot{width:12px;height:12px;border-radius:50%;justify-self:center}
+.dot.red{background:var(--red);box-shadow:0 0 8px rgba(224,86,94,.6)}
+.dot.blue{background:var(--blue);box-shadow:0 0 8px rgba(90,155,248,.6)}
+.dot.green{background:var(--green);box-shadow:0 0 8px rgba(87,194,106,.6)}
+.emblem select{width:100%;padding:6px 6px;font-size:13px}
+.epct{text-align:right;font-size:13px;font-weight:700;color:var(--gold2);white-space:nowrap}
+.epct small{display:block;font-weight:500;color:var(--muted);font-size:10px}
+.warn{background:rgba(224,86,94,.08);border:1px solid rgba(224,86,94,.35);color:#f0a3a8;font-size:12.5px;border-radius:9px;padding:7px 10px;margin-top:8px}
+.note{background:rgba(90,155,248,.07);border:1px solid rgba(90,155,248,.3);color:#a9c6f2;font-size:12.5px;border-radius:9px;padding:7px 10px;margin-top:8px}
+.game-tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.game-tabs .gtab{background:var(--card2);border:1px solid var(--line2);color:var(--muted);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:700}
+.game-tabs .gtab.active{border-color:var(--gold);color:var(--gold2);background:#241f14}
+.game-block{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.stat-grid{display:grid;gap:6px;margin-top:8px}
+.stat-row{display:grid;grid-template-columns:minmax(110px,1fr) 92px 92px;gap:6px;align-items:center}
+.stat-row.one{grid-template-columns:minmax(110px,1fr) 110px}
+.stat-row label{font-size:13px;color:var(--muted)}
+.stat-row label b{color:var(--text);font-weight:600}
+.g-res{margin-top:12px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px}
+.g-res .big{font-size:16px;font-weight:800;color:var(--gold2)}
+.g-res .br b{color:var(--text);font-weight:600}
+.br{color:var(--muted);font-weight:400}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
+.chk input{accent-color:var(--gold)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:right;white-space:nowrap}
+th{color:var(--muted);font-weight:600;background:var(--card2)}
+td:first-child,th:first-child{text-align:left}
+tr.total td{font-weight:800;color:var(--gold2);background:rgba(217,180,91,.06)}
+td.strike{opacity:.45}
+.sum-hero{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sum-total{font-size:34px;font-weight:900;color:var(--gold2);letter-spacing:.02em}
+.sum-total small{font-size:13px;color:var(--muted);font-weight:500;display:block;letter-spacing:.05em;text-transform:uppercase}
+.banner-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:10px 0}
+.bs-item{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.bs-item .v{font-size:21px;font-weight:800}
+.bs-item .k{font-size:12px;color:var(--muted)}
+.star{color:var(--gold)}
+.rules table td,.rules table th{font-size:13px}
+.rules h3{margin:18px 0 6px;color:var(--gold2);font-size:15px}
+.rules p{color:#c7cbd6;margin:6px 0}
+.rules li{color:#c7cbd6;margin:3px 0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#241f14;border:1px solid var(--gold);color:var(--gold2);padding:10px 18px;border-radius:10px;font-weight:700;opacity:0;transition:.25s;pointer-events:none;z-index:99}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+details.adv{margin:8px 0}
+details.adv summary{cursor:pointer;color:var(--muted);font-size:13px;font-weight:600}
+.coef-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:8px}
+.coef-grid label{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:5px 8px}
+.coef-grid input{width:80px;padding:4px 6px;font-size:13px}
+.ctable-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.ctable input{width:76px;padding:5px 6px;font-size:13px}
+.ctable input[type=checkbox]{width:auto}
+.ctable .role{font-weight:700;color:var(--muted);white-space:nowrap}
+footer{max-width:1200px;margin:24px auto 0;padding:0 16px;color:var(--dim);font-size:12.5px;text-align:center}
+@media (max-width:640px){
+  .emblem{grid-template-columns:12px 1fr 78px;grid-auto-rows:auto}
+  .emblem .trait-sel{grid-column:1/3}
+  .emblem .epct{grid-column:3}
+  .stat-row,.stat-row.one{grid-template-columns:minmax(90px,1fr) 84px 84px}
+  .sum-total{font-size:28px}
+}
+</style>
+</head>
+<body>
+
+<header><div class="head-in">
+  <div class="logo">⚔ Фэнтези <span class="gold">Dota&nbsp;2</span> · калькулятор 2026
+    <small>The International · Compendium + классика Valve</small></div>
+  <nav class="tabs">
+    <button data-tab="comp" class="active">🛡 Compendium TI 2026</button>
+    <button data-tab="classic">📊 Классика (Valve)</button>
+    <button data-tab="rules">📜 Правила и источники</button>
+  </nav>
+</div></header>
+
+<main>
+
+<!-- ============================ COMPENDIUM ============================ -->
+<section id="tab-comp">
+  <div class="card">
+    <h2>Знамёна и эмблемы</h2>
+    <div class="sub">Состав фэнтези TI 2026: <b>Основа</b> (пара кор-игроков одной команды) + <b>Центр</b> (один мид) + <b>Поддержка</b> (пара саппортов). Очки дают только показатели, стоящие на эмблемах.</div>
+    <div class="toolbar">
+      <div class="seg" id="stageSeg">
+        <button data-stage="group" class="active">Групповая · 3 эмблемы</button>
+        <button data-stage="main">Main Event · 5 эмблем</button>
+      </div>
+      <button class="btn" id="btnExample">⚡ Заполнить пример</button>
+      <button class="btn danger" id="btnClearGames">Очистить карты</button>
+      <button class="btn danger" id="btnReset">Сбросить всё</button>
+    </div>
+    <div class="grid3" id="bannerCards"></div>
+    <div class="note">Счёт знамени-пары — это <b>среднее двух игроков</b>, а не сумма. «Одиночные» события (первая кровь, Рошан, Терзатель, курьер, башня) достаются одному из пары — просто впишите их одному игроку, среднее само даст положенные 50%.</div>
+  </div>
+
+  <div class="card" id="titleCard">
+    <h2>Тренерский титул</h2>
+    <div class="sub">Префикс + суффикс действуют на весь ростер. Проценты можно поменять под свой ролл. Активация по картам отмечается галочками на каждой карте.</div>
+    <div class="toolbar" id="titleRow"></div>
+    <div class="note" id="titleHint"></div>
+  </div>
+
+  <div class="card">
+    <h2>Карты матча</h2>
+    <div class="sub">Введите статистику по картам. Серия = сумма <b>двух лучших</b> карт каждого знамени (худшая карта Bo3 не считается). В зачёт дня идёт лучший матч — считайте каждый матч отдельно.</div>
+    <div class="game-tabs" id="gameTabs"></div>
+    <div id="gameBody"></div>
+  </div>
+
+  <div class="card">
+    <div class="sum-hero">
+      <div class="sum-total"><small>Итого за серию (2 лучшие карты × 3 знамени)</small><span id="grandTotal">0</span></div>
+      <button class="btn gold" id="btnCopy">📋 Скопировать итог</button>
+    </div>
+    <div id="sumTable"></div>
+    <div class="banner-sum" id="bannerSum"></div>
+  </div>
+
+  <div class="card">
+    <h2>Настройки расчёта</h2>
+    <div class="sub">Valve не публикует порядок применения процентов в клиенте — выберите вариант (по умолчанию — как отображается в клиенте).</div>
+    <div class="toolbar">
+      <label class="chk"><input type="checkbox" id="optTraitAdd" checked> свойство прибавляется к разряду (как на эмблеме в клиенте)</label>
+    </div>
+    <div class="toolbar">
+      <label class="chk"><input type="checkbox" id="optTitleMult" checked> префикс и суффикс применяются независимо (×%, ×%)</label>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ CLASSIC ============================ -->
+<section id="tab-classic" hidden>
+  <div class="card">
+    <h2>Классическое фэнтези Valve</h2>
+    <div class="sub">Официальная таблица очков Valve (DPC/лиги, используется сторонними лигами и в 2026). Роли не влияют на подсчёт, станд-ины не приносят очков.</div>
+    <div class="toolbar">
+      <label class="chk" style="color:var(--text)">Формат серии:
+        <select id="clFormat">
+          <option value="bo1">Bo1</option>
+          <option value="bo2">Bo2 (обе карты)</option>
+          <option value="bo3" selected>Bo3 (лучшие 2 карты)</option>
+          <option value="bo5">Bo5 (лучшие 3 карты)</option>
+          <option value="all">Все карты</option>
+        </select>
+      </label>
+      <label class="chk" style="color:var(--text)">Статус турнира:
+        <select id="clTour">
+          <option value="100" selected>Премиум · 100%</option>
+          <option value="25">Профессиональный · 25%</option>
+          <option value="custom">Свой множитель…</option>
+        </select>
+      </label>
+      <input type="number" id="clTourCustom" value="100" min="0" max="400" style="width:80px;display:none" title="Свой множитель, %">
+      <button class="btn" id="clExample">⚡ Заполнить пример</button>
+      <button class="btn danger" id="clClear">Очистить карты</button>
+    </div>
+    <details class="adv"><summary>Коэффициенты (можно править)</summary>
+      <div class="coef-grid" id="clCoef"></div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>Карты матча</h2>
+    <div class="sub">Bo3 — засчитываются 2 лучшие карты каждого игрока, Bo5 — 3 лучшие.</div>
+    <div class="game-tabs" id="clGameTabs"></div>
+    <div id="clGameBody"></div>
+  </div>
+
+  <div class="card">
+    <div class="sum-hero">
+      <div class="sum-total"><small>Итого команды за серию</small><span id="clGrandTotal">0</span></div>
+      <button class="btn gold" id="clCopy">📋 Скопировать итог</button>
+    </div>
+    <div id="clSumTable"></div>
+  </div>
+</section>
+
+<!-- ============================ RULES ============================ -->
+<section id="tab-rules" hidden>
+<div class="card rules">
+  <h2>Compendium TI 2026 — как считаются очки</h2>
+  <h3>Базовые очки за показатели (18 шт.)</h3>
+  <table>
+    <tr><th>🔴 Красная эмблема</th><th>очки</th><th>🟢 Зелёная эмблема</th><th>очки</th><th>🔵 Синяя эмблема</th><th>очки</th></tr>
+    <tr><td>Убийства</td><td>107 × шт</td><td>Командные сражения</td><td>2124 × доля участия</td><td>Варды (Observer)</td><td>117 × шт</td></tr>
+    <tr><td>Смерти</td><td>1950 − 195 × шт</td><td>Станы</td><td>10 × сек</td><td>Стаки лагерей</td><td>234 × шт</td></tr>
+    <tr><td>Крипы (ластхиты + денаи)</td><td>3 × шт</td><td>Первая кровь</td><td>1934</td><td>Руны</td><td>141 × шт</td></tr>
+    <tr><td>GPM</td><td>2 × ед</td><td>Убийства Терзателей</td><td>879</td><td>Смотрители</td><td>147 × шт</td></tr>
+    <tr><td>Безумруды</td><td>13 × шт</td><td>Убийства Рошана</td><td>1172</td><td>Лотосы</td><td>176 × шт</td></tr>
+    <tr><td>Башни (ластхит)</td><td>352 × шт</td><td>Убийства курьеров</td><td>703</td><td>Smoke of Deceit</td><td>293 × шт</td></tr>
+  </table>
+  <h3>Разряды эмблем</h3>
+  <p>I +10% · II +30% · III +60% · IV +100% · V +150%</p>
+  <h3>Свойства эмблем</h3>
+  <ul>
+    <li><b>Фрактальная</b> — +60% этой эмблеме, если разряды всех эмблем знамени разные</li>
+    <li><b>Благотворная</b> — +20% соседним эмблемам</li>
+    <li><b>Вампирическая</b> — +50% себе и −10% соседним</li>
+    <li><b>Уникальная</b> — +30%, если на знамени нет другой Уникальной</li>
+    <li><b>Дружелюбная</b> — +50%, если Дружелюбных на знамени ≥ 3</li>
+  </ul>
+  <h3>Титул (префикс + суффикс, на весь ростер)</h3>
+  <p><b>Префиксы</b> (цвет/тип героя): Багровый +6% (красный), Лазурный +11% (синий), Изумрудный +6% (зелёный), Королевский +10% (фиолетовый), Золотой +8% (жёлтый/коричневый), Элементальный +8% (вода/огонь/лёд), Потусторонний +7% (нежить/демон/дух), Героический +9% (маска/плащ).</p>
+  <p><b>Суффиксы</b> (события): Удалец +24% (карта короче 25 мин), Мученик +23% (смерть от Терзателя), Выжидатель +23% (нет первой крови до 10:00), Везунчик +21% (длительность карты оканчивается на 8), Творец победы +16% (победа в решающей карте матча), Жрец Бескожих близнецов +9% (первая кровь до стартового горна), Жестокий +13% (убийства у фонтана), Аутсайдер +6% (поражение команды).</p>
+  <h3>Правила подсчёта</h3>
+  <ul>
+    <li>Очки дают <b>только показатели на эмблемах</b> знамени (по 3 на групповой стадии, по 5 на Main Event).</li>
+    <li>Знамя-пара (Основа, Поддержка) — <b>среднее двух игроков</b>; одиночные события приносят паре 50%.</li>
+    <li>Матч = сумма <b>двух лучших карт</b> серии (в Bo3 худшая карта не считается). В зачёт дня идёт лучший матч.</li>
+    <li>Смерти могут увести очки в минус — клампы нет.</li>
+    <li>Групповая стадия: Основа — красная·зелёная·красная, Центр — красная·синяя·зелёная, Поддержка — синяя·зелёная·синяя. Main Event: +2 слота (Основа К·З·К·З·К, Центр К·С·З·К·З, Поддержка С·З·С·З·С).</li>
+  </ul>
+  <h3>Классическая система Valve</h3>
+  <table>
+    <tr><th>Показатель</th><th>Очки</th><th>Показатель</th><th>Очки</th></tr>
+    <tr><td>Убийство</td><td>+0.3</td><td>Секунды стана</td><td>+0.05 (клиент CN: +0.07)</td></tr>
+    <tr><td>Смерть</td><td>−0.3</td><td>Лечение союзников</td><td>+0.0004 за ед. (0.4 за тыс.)</td></tr>
+    <tr><td>Помощь</td><td>+0.15</td><td>Башня (ластхит)</td><td>+1</td></tr>
+    <tr><td>Ластхит</td><td>+0.003</td><td>Рошан (ластхит)</td><td>+1</td></tr>
+    <tr><td>GPM</td><td>+0.002</td><td>Первая кровь</td><td>+4</td></tr>
+    <tr><td>XPM</td><td>+0.002</td><td>Вард поставлен</td><td>+0.5</td></tr>
+    <tr><td>Тимфайт</td><td>+3 × доля участия</td><td>Стак лагеря</td><td>+0.5</td></tr>
+    <tr><td>Руна</td><td>+0.25</td><td>—</td><td>—</td></tr>
+  </table>
+  <ul>
+    <li>Bo3 — 2 лучшие карты игрока, Bo5 — 3 лучшие.</li>
+    <li>Премиум-турниры — 100% очков, профессиональные — 25% (настраивается).</li>
+  </ul>
+  <h3>Источники</h3>
+  <ul>
+    <li><a href="https://www.ti2026calculator.com/" target="_blank" rel="noopener">TI 2026 Fantasy Calculator — таблица правил и значений</a></li>
+    <li><a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3777822671" target="_blank" rel="noopener">Steam-гайд «Калькулятор Фэнтези 2026» (все 18 показателей, пары, свойства)</a></li>
+    <li><a href="https://egamersworld.com/blog/dota-2-ti-2025-compendium-fantasy-guide-ZKV8AzF9_I" target="_blank" rel="noopener">egamersworld — гайд по фэнтези TI (механика серий и эмблем)</a></li>
+    <li><a href="https://liquipedia.net/dota2/Fantasy_Dota" target="_blank" rel="noopener">Liquipedia — Fantasy Dota (классическая таблица)</a></li>
+    <li><a href="https://www.dota2.com.cn/fantasy/seasontwo/" target="_blank" rel="noopener">Официальная страница фэнтези Dota 2 (CN) — разряды, Bo-правила, 25%</a></li>
+    <li><a href="https://ancientdraft.com/fantasy" target="_blank" rel="noopener">ancientdraft — классический скоринг для TI 2026</a></li>
+  </ul>
+  <div class="note">Проценты титула и разряды у роллов варьируются — в калькуляторе все значения и проценты редактируются под ваш ролл. Порядок применения «разряд+свойство» и «префикс+суффикс» Valve официально не документирован — переключается в настройках (по умолчанию — как в клиенте: прибавлением).</div>
+</div>
+</section>
+
+</main>
+<footer>Калькулятор не связан с Valve. Все настройки сохраняются локально в браузере.</footer>
+<div class="toast" id="toast">Скопировано</div>
+
+<script>
+'use strict';
+/* ==================== ДАННЫЕ ==================== */
+const STAT = {
+  kills:      {name:'Убийства',        color:'red',   unit:'шт',  f:v=>107*v, hint:'107 за шт'},
+  deaths:     {name:'Смерти',          color:'red',   unit:'шт',  f:v=>1950-195*v, hint:'1950 − 195×смерть (может быть <0)'},
+  creeps:     {name:'Крипы (LH+денаи)',color:'red',   unit:'шт',  f:v=>3*v, hint:'3 за крипа'},
+  gpm:        {name:'GPM',             color:'red',   unit:'',    f:v=>2*v, hint:'2 × GPM'},
+  madstones:  {name:'Безумруды',       color:'red',   unit:'шт',  f:v=>13*v, hint:'13 за шт'},
+  towers:     {name:'Башни',           color:'red',   unit:'шт',  f:v=>352*v, hint:'352 за ластхит', solo:1},
+  roshan:     {name:'Убийства Рошана', color:'green', unit:'шт',  f:v=>1172*v, hint:'1172, одному из пары', solo:1},
+  teamfight:  {name:'Тимфайт',         color:'green', unit:'%',   f:v=>2124*v/100, hint:'2124 × доля участия'},
+  tormentor:  {name:'Убийства Терзателя',color:'green',unit:'шт', f:v=>879*v, hint:'879, одному из пары', solo:1},
+  stuns:      {name:'Станы',           color:'green', unit:'сек', f:v=>10*v, hint:'10 за секунду'},
+  courier:    {name:'Убийства курьеров',color:'green',unit:'шт',  f:v=>703*v, hint:'703, одному из пары', solo:1},
+  firstblood: {name:'Первая кровь',    color:'green', unit:'0/1', f:v=>1934*v, hint:'1934, одному из пары', solo:1, bool:1},
+  wards:      {name:'Варды (Observer)',color:'blue',  unit:'шт',  f:v=>117*v, hint:'117 за вард'},
+  stacks:     {name:'Стаки лагерей',   color:'blue',  unit:'шт',  f:v=>234*v, hint:'234 за стак'},
+  runes:      {name:'Руны',            color:'blue',  unit:'шт',  f:v=>141*v, hint:'141 за руну'},
+  watchers:   {name:'Смотрители',      color:'blue',  unit:'шт',  f:v=>147*v, hint:'147 за захват'},
+  lotuses:    {name:'Лотосы',          color:'blue',  unit:'шт',  f:v=>176*v, hint:'176 за лотос'},
+  smokes:     {name:'Смоки',           color:'blue',  unit:'шт',  f:v=>293*v, hint:'293 за применение'},
+};
+const POOL = {
+  red:  ['kills','deaths','creeps','gpm','madstones','towers'],
+  green:['roshan','teamfight','tormentor','stuns','courier','firstblood'],
+  blue: ['wards','stacks','runes','watchers','lotuses','smokes'],
+};
+const COLOR_RU = {red:'красная', green:'зелёная', blue:'синяя'};
+const BANNERS = {
+  core: {name:'Основа',    ru:'пара кор-игроков (поз. 1+3)', players:2, colorsG:['red','green','red'],   colorsM:['red','green','red','green','red']},
+  mid:  {name:'Центр',     ru:'один игрок (поз. 2)',          players:1, colorsG:['red','blue','green'],   colorsM:['red','blue','green','red','green']},
+  sup:  {name:'Поддержка', ru:'пара саппортов (поз. 4+5)',     players:2, colorsG:['blue','green','blue'],  colorsM:['blue','green','blue','green','blue']},
+};
+const BIDS = ['core','mid','sup'];
+const TIER = [10,30,60,100,150];
+const TIERS = [{v:0,n:'I (+10%)'},{v:1,n:'II (+30%)'},{v:2,n:'III (+60%)'},{v:3,n:'IV (+100%)'},{v:4,n:'V (+150%)'}];
+const TRAITS = [
+  {v:'none',n:'— без свойства'},
+  {v:'fractal',n:'Фрактальная (+60%)'},
+  {v:'benevolent',n:'Благотворная (+20% соседям)'},
+  {v:'vampiric',n:'Вампирическая (+50% / −10% соседям)'},
+  {v:'unique',n:'Уникальная (+30%)'},
+  {v:'friendly',n:'Дружелюбная (+50%)'},
+];
+const PREFIXES = [
+  {v:'golden',n:'Золотой +8% (жёлтый/коричневый герой)',p:8},
+  {v:'heroic',n:'Героический +9% (маска/плащ)',p:9},
+  {v:'otherworldly',n:'Потусторонний +7% (нежить/демон/дух)',p:7},
+  {v:'elemental',n:'Элементальный +8% (вода/огонь/лёд)',p:8},
+  {v:'cerulean',n:'Лазурный +11% (синий герой)',p:11},
+  {v:'royal',n:'Королевский +10% (фиолетовый)',p:10},
+  {v:'crimson',n:'Багровый +6% (красный)',p:6},
+  {v:'emerald',n:'Изумрудный +6% (зелёный)',p:6},
+];
+const SUFFIXES = [
+  {v:'decisive',n:'Удалец +24% (карта короче 25 мин)',p:24},
+  {v:'tormented',n:'Мученик +23% (смерть от Терзателя)',p:23},
+  {v:'patient',n:'Выжидатель +23% (нет 1-й крови до 10:00)',p:23},
+  {v:'lucky',n:'Везунчик +21% (длина карты оканчивается на 8)',p:21},
+  {v:'clutch',n:'Творец победы +16% (победа в решающей карте)',p:16},
+  {v:'cruel',n:'Жестокий +13% (убийства у фонтана)',p:13},
+  {v:'acolyte',n:'Жрец Бескожих близнецов +9% (1-я кровь до горна)',p:9},
+  {v:'underdog',n:'Аутсайдер +6% (поражение команды)',p:6},
+];
+const CL_COEF = [
+  ['kills','Убийство',0.3],['deaths','Смерть',-0.3],['assists','Помощь',0.15],['lh','Ластхит',0.003],
+  ['gpm','GPM',0.002],['xpm','XPM',0.002],['stuns','Стан, сек',0.05],['heal','Лечение, ед',0.0004],
+  ['tower','Башня',1],['roshan','Рошан',1],['fb','Первая кровь',4],['wards','Вард',0.5],
+  ['stacks','Стак лагеря',0.5],['runes','Руна',0.25],['tf','Тимфайт (×доля)',3],
+];
+const CL_COLS = [
+  ['kills','K'],['deaths','D'],['assists','A'],['lh','LH'],['gpm','GPM'],['xpm','XPM'],['stuns','Стан с'],
+  ['heal','Хил'],['tf','ТФ%'],['tower','Башни'],['roshan','Рошан'],['fb','1-я кровь'],['wards','Варды'],['stacks','Стаки'],['runes','Руны'],
+];
+const ROLES = ['Керри (поз. 1)','Мид (поз. 2)','Оффлейн (поз. 3)','Саппорт (поз. 4)','Саппорт (поз. 5)'];
+
+/* ==================== СОСТОЯНИЕ ==================== */
+const LS_KEY = 'd2fantasy2026';
+function defaultEmblem(color, i){ return {stat: POOL[color][i % 6], tier: 1, trait: 'none'}; }
+function defaultBannerState(bid){
+  const b = BANNERS[bid];
+  return {emblems: b.colorsM.map((c,i)=>defaultEmblem(c,i)), names: b.players===2 ? ['',''] : ['']};
+}
+function defaultGame(){ return {prefixOn:true, suffixOn:false, core:[{},{}], mid:[{}], sup:[{},{}]}; }
+function defaultState(){
+  return {
+    stage:'group',
+    banners:{core:defaultBannerState('core'), mid:defaultBannerState('mid'), sup:defaultBannerState('sup')},
+    title:{prefix:'golden', prefixPct:8, suffix:'clutch', suffixPct:16},
+    opts:{traitAdd:true, titleMult:true},
+    games:[defaultGame(),defaultGame(),defaultGame()],
+    curGame:0,
+    classic:{
+      coef:Object.fromEntries(CL_COEF.map(c=>[c[0],c[2]])),
+      format:'bo3', tour:'100', tourCustom:100,
+      names:['','','','',''],
+      games:Array.from({length:3},()=>Array.from({length:5},()=>({}))),
+      curGame:0,
+    },
+  };
+}
+let state = defaultState();
+try{
+  const saved = JSON.parse(localStorage.getItem(LS_KEY));
+  if(saved && saved.banners && saved.games) state = Object.assign(defaultState(), saved);
+}catch(e){}
+// нормализация сохранённого состояния
+BIDS.forEach(bid=>{
+  const b = BANNERS[bid], st = state.banners[bid];
+  st.emblems = Array.isArray(st.emblems) ? st.emblems.slice(0,5) : [];
+  while(st.emblems.length < 5) st.emblems.push(defaultEmblem(b.colorsM[st.emblems.length], st.emblems.length));
+  if(!Array.isArray(st.names) || st.names.length !== b.players) st.names = b.players===2 ? ['',''] : [''];
+});
+if(!state.games.length) state.games = [defaultGame()];
+state.curGame = Math.min(state.curGame||0, state.games.length-1);
+state.games.forEach(g=>BIDS.forEach(bid=>{
+  if(!Array.isArray(g[bid])) g[bid] = BANNERS[bid].players===2 ? [{},{}] : [{}];
+  while(g[bid].length < BANNERS[bid].players) g[bid].push({});
+}));
+if(!Array.isArray(state.classic.games) || !state.classic.games.length)
+  state.classic.games = [Array.from({length:5},()=>({}))];
+state.classic.games.forEach(g=>{ while(g.length<5) g.push({}); });
+state.classic.curGame = Math.min(state.classic.curGame||0, state.classic.games.length-1);
+const save = ()=>{ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} };
+
+const slotCount = ()=> state.stage==='main' ? 5 : 3;
+const bannerColors = bid => (state.stage==='main' ? BANNERS[bid].colorsM : BANNERS[bid].colorsG);
+const num = v => { const n = parseFloat(String(v).replace(',','.')); return isFinite(n)?n:0; };
+const fmt = n => Math.round(n).toLocaleString('ru-RU');
+const fmt1 = n => (Math.round(n*10)/10).toLocaleString('ru-RU');
+const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ==================== ЭМБЛЕМЫ: ПРОЦЕНТЫ ==================== */
+function emblemPcts(emblems){
+  const n = emblems.length;
+  const pct = emblems.map(e=>TIER[e.tier]);
+  const distinct = new Set(emblems.map(e=>e.tier)).size===n;
+  const friendly = emblems.filter(e=>e.trait==='friendly').length;
+  const unique = emblems.filter(e=>e.trait==='unique').length;
+  emblems.forEach((e,i)=>{
+    if(e.trait==='fractal' && distinct) pct[i]+=60;
+    if(e.trait==='unique' && unique===1) pct[i]+=30;
+    if(e.trait==='friendly' && friendly>=3) pct[i]+=50;
+    if(e.trait==='benevolent'){ if(i>0)pct[i-1]+=20; if(i<n-1)pct[i+1]+=20; }
+    if(e.trait==='vampiric'){ pct[i]+=50; if(i>0)pct[i-1]-=10; if(i<n-1)pct[i+1]-=10; }
+  });
+  return pct;
+}
+
+/* ==================== РАСЧЁТ COMPENDIUM ==================== */
+function bannerGameCalc(bid, gi){
+  const b = BANNERS[bid];
+  const st = state.banners[bid];
+  const n = slotCount();
+  const emblems = st.emblems.slice(0,n);
+  const pcts = emblemPcts(emblems);
+  const game = state.games[gi];
+  const rows = emblems.map((e,i)=>{
+    let v = 0;
+    for(let p=0;p<b.players;p++) v += num((game[bid][p]||{})[e.stat]);
+    v /= b.players;
+    const pts = STAT[e.stat].f(v);
+    let mult;
+    if(state.opts.traitAdd){ mult = 1 + pcts[i]/100; }
+    else { const traitPart = pcts[i]-TIER[e.tier]; mult = (1+TIER[e.tier]/100)*(1+traitPart/100); }
+    return {stat:e.stat, v, pts, pct:pcts[i], contrib:pts*mult};
+  });
+  const base = rows.reduce((s,r)=>s+r.contrib,0);
+  const p = game.prefixOn ? state.title.prefixPct/100 : 0;
+  const s = game.suffixOn ? state.title.suffixPct/100 : 0;
+  const tMult = state.opts.titleMult ? (1+p)*(1+s) : (1+p+s);
+  return {rows, base, score:base*tMult, titleMult:tMult};
+}
+function seriesScore(scores){ // две лучшие карты
+  const s = [...scores].sort((a,b)=>b-a);
+  return s.slice(0, Math.min(2, s.length)).reduce((x,y)=>x+y,0);
+}
+function calcAll(){
+  const per = {};
+  BIDS.forEach(bid=>{ per[bid] = state.games.map((g,gi)=>bannerGameCalc(bid,gi).score); });
+  const rosterPerGame = state.games.map((g,gi)=>BIDS.reduce((s,bid)=>s+per[bid][gi],0));
+  const series = {}; BIDS.forEach(bid=>series[bid]=seriesScore(per[bid]));
+  return {per, rosterPerGame, series, total:BIDS.reduce((s,b)=>s+series[b],0)};
+}
+
+/* ==================== РЕНДЕР: ЗНАМЁНА ==================== */
+function renderBanners(){
+  const el = document.getElementById('bannerCards');
+  el.innerHTML = BIDS.map(bid=>{
+    const b = BANNERS[bid], st = state.banners[bid];
+    const colors = bannerColors(bid);
+    const n = slotCount();
+    const dup = new Set(st.emblems.slice(0,n).map(e=>e.stat)).size !== n;
+    const emblemRows = st.emblems.slice(0,n).map((e,i)=>{
+      const c = colors[i];
+      const opts = ()=>POOL[c].map(k=>`<option value="${k}" ${k===e.stat?'selected':''}>${STAT[k].name}</option>`).join('');
+      const topt = TIERS.map(t=>`<option value="${t.v}" ${t.v===e.tier?'selected':''}>${t.n}</option>`).join('');
+      const tropt = TRAITS.map(t=>`<option value="${t.v}" ${t.v===e.trait?'selected':''}>${t.n}</option>`).join('');
+      return `<div class="emblem">
+        <span class="dot ${c}" title="${COLOR_RU[c]}"></span>
+        <select data-b="${bid}" data-i="${i}" data-f="stat">${opts()}</select>
+        <select data-b="${bid}" data-i="${i}" data-f="tier">${topt}</select>
+        <select class="trait-sel" data-b="${bid}" data-i="${i}" data-f="trait">${tropt}</select>
+        <span class="epct" id="pct-${bid}-${i}"></span>
+      </div>`;
+    }).join('');
+    const names = b.players===2
+      ? `<input placeholder="Кор 1" value="${esc(st.names[0]||'')}" data-b="${bid}" data-np="0">
+         <input placeholder="Кор 2 (офлейн)" value="${esc(st.names[1]||'')}" data-b="${bid}" data-np="1">`
+      : `<input placeholder="Мид" value="${esc(st.names[0]||'')}" data-b="${bid}" data-np="0">`;
+    return `<div class="banner-card">
+      <h3>${b.name} <span class="tag">${b.ru}</span><span class="tag">${b.players===2?'счёт = среднее пары':'один игрок'}</span></h3>
+      <div class="names">${names}</div>
+      ${emblemRows}
+      ${dup?'<div class="warn">⚠ Один показатель стоит на двух эмблемах — в игре такое обычно недоступно; каждая эмблема засчитает его отдельно.</div>':''}
+    </div>`;
+  }).join('');
+  updatePcts();
+}
+function updatePcts(){
+  BIDS.forEach(bid=>{
+    const n = slotCount();
+    const emblems = state.banners[bid].emblems.slice(0,n);
+    const pcts = emblemPcts(emblems);
+    emblems.forEach((e,i)=>{
+      const el = document.getElementById(`pct-${bid}-${i}`);
+      if(el) el.innerHTML = (pcts[i]>=0?'+':'')+pcts[i]+'%<small>к очкам</small>';
+    });
+  });
+}
+
+/* ==================== РЕНДЕР: ТИТУЛ ==================== */
+function renderTitle(){
+  const t = state.title;
+  document.getElementById('titleRow').innerHTML = `
+    <label class="chk" style="color:var(--text)">Префикс:
+      <select id="selPrefix">${PREFIXES.map(p=>`<option value="${p.v}" ${p.v===t.prefix?'selected':''}>${p.n}</option>`).join('')}</select>
+      <input type="number" id="pfxPct" value="${t.prefixPct}" style="width:70px">%
+    </label>
+    <label class="chk" style="color:var(--text)">Суффикс:
+      <select id="selSuffix">${SUFFIXES.map(p=>`<option value="${p.v}" ${p.v===t.suffix?'selected':''}>${p.n}</option>`).join('')}</select>
+      <input type="number" id="sfxPct" value="${t.suffixPct}" style="width:70px">%
+    </label>`;
+  const p = PREFIXES.find(x=>x.v===t.prefix), s = SUFFIXES.find(x=>x.v===t.suffix);
+  document.getElementById('titleHint').innerHTML =
+    `Текущий титул: <b>${p?p.n.split('+')[0]:''} ${s?s.n.split('+')[0]:''}</b>. Префикс зависит от героя — управляемо драфтом, суффикс — от событий карты.`;
+}
+
+/* ==================== РЕНДЕР: КАРТЫ (COMPENDIUM) ==================== */
+function renderGameTabs(){
+  const el = document.getElementById('gameTabs');
+  el.innerHTML = state.games.map((g,i)=>`<button class="gtab ${i===state.curGame?'active':''}" data-gi="${i}">Карта ${i+1}</button>`).join('')
+    + (state.games.length<5?`<button class="btn mini" id="addGame">+ карта</button>`:'')
+    + (state.games.length>1?`<button class="btn mini danger" id="delGame">− текущая</button>`:'');
+}
+function renderGameBody(){
+  const gi = state.curGame;
+  const g = state.games[gi];
+  const blocks = BIDS.map(bid=>{
+    const b = BANNERS[bid], st = state.banners[bid];
+    const n = slotCount();
+    const stats = []; const seen = new Set();
+    st.emblems.slice(0,n).forEach(e=>{ if(!seen.has(e.stat)){ seen.add(e.stat); stats.push(e.stat); } });
+    const rows = stats.map(k=>{
+      const s = STAT[k];
+      const cells = [];
+      for(let p=0;p<b.players;p++){
+        const v = (g[bid][p]||{})[k] ?? '';
+        if(s.bool){
+          cells.push(`<label class="chk" style="justify-content:center"><input type="checkbox" data-b="${bid}" data-p="${p}" data-k="${k}" ${num(v)?'checked':''}></label>`);
+        } else {
+          cells.push(`<input type="number" step="any" min="0" placeholder="0" value="${v}" data-b="${bid}" data-p="${p}" data-k="${k}" title="${esc(s.hint)}">`);
+        }
+      }
+      return `<div class="stat-row ${b.players===1?'one':''}">
+        <label><b>${s.name}</b> ${s.unit&&s.unit!=='0/1'?`<span style="opacity:.6">(${s.unit})</span>`:''}${s.solo?' <span title="Достаётся одному из пары → 50% очков">½</span>':''}</label>
+        ${cells.join('')}
+      </div>`;
+    }).join('');
+    const names = b.players===2
+      ? `<span class="tag">${esc(st.names[0]||'Игрок 1')}</span><span class="tag">${esc(st.names[1]||'Игрок 2')}</span>`
+      : `<span class="tag">${esc(st.names[0]||'Игрок')}</span>`;
+    return `<div class="banner-card">
+      <h3>${b.name} ${names}</h3>
+      ${rows}
+    </div>`;
+  }).join('');
+  document.getElementById('gameBody').innerHTML = `
+    <div class="toolbar">
+      <label class="chk"><input type="checkbox" id="pfxOn" ${g.prefixOn?'checked':''}> префикс активен (${state.title.prefixPct}%)</label>
+      <label class="chk"><input type="checkbox" id="sfxOn" ${g.suffixOn?'checked':''}> суффикс активен (${state.title.suffixPct}%)</label>
+    </div>
+    <div class="game-block">${blocks}</div>
+    <div class="g-res" id="gRes"></div>`;
+}
+
+/* ==================== РЕНДЕР: ИТОГИ (COMPENDIUM) ==================== */
+function renderResults(){
+  const r = calcAll();
+  const gi = state.curGame;
+  const gr = document.getElementById('gRes');
+  if(gr){
+    const parts = BIDS.map(bid=>{
+      const c = bannerGameCalc(bid, gi);
+      const br = c.rows.map(x=>`${STAT[x.stat].name} <b>${fmt(x.contrib)}</b>`);
+      return `${BANNERS[bid].name}: <b>${fmt(c.score)}</b> <span class="br">(${br.join(' · ')}${c.titleMult!==1?` · титул ×${c.titleMult.toFixed(2)}`:''})</span>`;
+    }).join('<br>');
+    gr.innerHTML = `Карта ${gi+1} — ростер: <span class="big">${fmt(r.rosterPerGame[gi])}</span><br>${parts}`;
+  }
+  document.getElementById('grandTotal').textContent = fmt(r.total);
+  const head = `<tr><th>Знамя</th>${state.games.map((_,i)=>`<th>Карта ${i+1}</th>`).join('')}<th>Серия (2 лучшие)</th></tr>`;
+  const counted = bid => {
+    const arr = r.per[bid];
+    const order = arr.map((v,i)=>[v,i]).sort((a,b)=>b[0]-a[0]).slice(0,Math.min(2,arr.length)).map(x=>x[1]);
+    return new Set(order);
+  };
+  const rows = BIDS.map(bid=>{
+    const cnt = counted(bid);
+    const b = BANNERS[bid];
+    const nm = state.banners[bid].names.filter(x=>x).join(' · ');
+    const name = `${b.name} <span class="br" style="font-size:11px">(${esc(nm||b.ru)})</span>`;
+    return `<tr><td>${name}</td>${r.per[bid].map((v,i)=>`<td class="${cnt.has(i)?'':'strike'}">${cnt.has(i)?'<span class="star">★</span> ':''}${fmt(v)}</td>`).join('')}<td style="font-weight:700">${fmt(r.series[bid])}</td></tr>`;
+  }).join('');
+  const trow = `<tr class="total"><td>Ростер</td>${r.rosterPerGame.map(v=>`<td>${fmt(v)}</td>`).join('')}<td>${fmt(r.total)}</td></tr>`;
+  document.getElementById('sumTable').innerHTML = `<table>${head}${rows}${trow}</table>`;
+  document.getElementById('bannerSum').innerHTML = BIDS.map(bid=>
+    `<div class="bs-item"><div class="k">${BANNERS[bid].name}</div><div class="v">${fmt(r.series[bid])}</div></div>`).join('')
+    + `<div class="bs-item" style="border-color:var(--gold)"><div class="k">ИТОГО</div><div class="v" style="color:var(--gold2)">${fmt(r.total)}</div></div>`;
+}
+
+/* ==================== ПРИМЕР (COMPENDIUM) ==================== */
+function fillExample(){
+  state.stage='main';
+  state.banners.core = {emblems:[
+    {stat:'creeps',tier:4,trait:'fractal'},{stat:'teamfight',tier:2,trait:'none'},{stat:'gpm',tier:3,trait:'benevolent'},
+    {stat:'towers',tier:1,trait:'none'},{stat:'kills',tier:2,trait:'vampiric'}], names:['Satanic','Noticed']};
+  state.banners.mid = {emblems:[
+    {stat:'kills',tier:3,trait:'none'},{stat:'runes',tier:4,trait:'fractal'},{stat:'teamfight',tier:2,trait:'none'},
+    {stat:'gpm',tier:2,trait:'benevolent'},{stat:'stuns',tier:1,trait:'none'}], names:['Nisha']};
+  state.banners.sup = {emblems:[
+    {stat:'wards',tier:4,trait:'none'},{stat:'teamfight',tier:3,trait:'none'},{stat:'smokes',tier:2,trait:'vampiric'},
+    {stat:'stacks',tier:2,trait:'none'},{stat:'watchers',tier:1,trait:'none'}], names:['rue','not me']};
+  state.games = [
+    {prefixOn:true, suffixOn:false,
+      core:[{creeps:720,gpm:660,kills:9,deaths:2,towers:2,teamfight:78},{creeps:480,gpm:540,kills:5,deaths:4,towers:1,teamfight:74}],
+      mid:[{kills:11,deaths:3,runes:14,gpm:610,teamfight:85,stuns:22}],
+      sup:[{wards:16,smokes:7,stacks:9,watchers:5,teamfight:70},{wards:14,smokes:6,stacks:11,watchers:6,teamfight:66}]},
+    {prefixOn:true, suffixOn:true,
+      core:[{creeps:810,gpm:700,kills:12,deaths:1,towers:3,teamfight:88},{creeps:430,gpm:500,kills:4,deaths:6,towers:0,teamfight:70}],
+      mid:[{kills:8,deaths:5,runes:11,gpm:580,teamfight:76,stuns:31}],
+      sup:[{wards:18,smokes:8,stacks:7,watchers:4,teamfight:79},{wards:15,smokes:9,stacks:13,watchers:7,teamfight:79}]},
+    {prefixOn:true, suffixOn:false,
+      core:[{creeps:540,gpm:590,kills:6,deaths:5,towers:1,teamfight:66},{creeps:380,gpm:470,kills:3,deaths:7,towers:0,teamfight:60}],
+      mid:[{kills:6,deaths:6,runes:9,gpm:540,teamfight:62,stuns:18}],
+      sup:[{wards:13,smokes:5,stacks:6,watchers:3,teamfight:58},{wards:12,smokes:5,stacks:8,watchers:5,teamfight:58}]},
+  ];
+  state.curGame = 0;
+  state.title = {prefix:'golden', prefixPct:8, suffix:'decisive', suffixPct:24};
+  document.querySelectorAll('#stageSeg button').forEach(b=>b.classList.toggle('active', b.dataset.stage==='main'));
+  refreshAll(); save();
+}
+
+/* ==================== КЛАССИКА: РАСЧЁТ ==================== */
+function clPlayerPts(row){
+  const c = state.classic.coef;
+  const g = k => num(row[k]);
+  return c.kills*g('kills') + c.deaths*g('deaths') + c.assists*g('assists') + c.lh*g('lh')
+    + c.gpm*g('gpm') + c.xpm*g('xpm') + c.stuns*g('stuns') + c.heal*g('heal')
+    + c.tower*g('tower') + c.roshan*g('roshan') + c.fb*(g('fb')?1:0) + c.wards*g('wards')
+    + c.stacks*g('stacks') + c.runes*g('runes') + c.tf*g('tf')/100;
+}
+function clTopN(){ const f = state.classic.format; return f==='bo1'?1 : f==='bo3'?2 : f==='bo5'?3 : 99; }
+function clTourMult(){
+  const c = state.classic;
+  return (c.tour==='custom' ? c.tourCustom : num(c.tour)) / 100;
+}
+function calcClassic(){
+  const c = state.classic;
+  const per = c.games.map(g=>g.map(row=>clPlayerPts(row)));       // [карта][игрок]
+  const gameTotals = per.map(a=>a.reduce((x,y)=>x+y,0));
+  const topN = Math.min(clTopN(), c.games.length);
+  const series = ROLES.map((_,pi)=> per.map(v=>v[pi]).sort((a,b)=>b-a).slice(0,topN).reduce((x,y)=>x+y,0));
+  const total = series.reduce((x,y)=>x+y,0) * clTourMult();
+  return {per, gameTotals, series, total};
+}
+
+/* ==================== КЛАССИКА: РЕНДЕР ==================== */
+function renderClCoef(){
+  document.getElementById('clCoef').innerHTML = CL_COEF.map(([k,n])=>
+    `<label>${n}<input type="number" step="any" data-ck="${k}" value="${state.classic.coef[k]}"></label>`).join('');
+}
+function renderClTabs(){
+  const c = state.classic;
+  document.getElementById('clGameTabs').innerHTML = c.games.map((_,i)=>
+      `<button class="gtab ${i===c.curGame?'active':''}" data-cgi="${i}">Карта ${i+1}</button>`).join('')
+    + (c.games.length<5?`<button class="btn mini" id="clAddGame">+ карта</button>`:'')
+    + (c.games.length>1?`<button class="btn mini danger" id="clDelGame">− текущая</button>`:'');
+}
+function renderClBody(){
+  const c = state.classic;
+  const gi = c.curGame;
+  const rows = ROLES.map((role,pi)=>{
+    const row = c.games[gi][pi] || {};
+    const cells = CL_COLS.map(([k])=>{
+      if(k==='fb') return `<td><input type="checkbox" data-cp="${pi}" data-ck="${k}" ${num(row.fb)?'checked':''}></td>`;
+      return `<td><input type="number" step="any" min="0" placeholder="0" value="${row[k]??''}" data-cp="${pi}" data-ck="${k}"></td>`;
+    }).join('');
+    const pts = clPlayerPts(row);
+    return `<tr><td class="role">${role}</td>
+      <td><input style="width:120px" placeholder="ник" value="${esc(c.names[pi]||'')}" data-cname="${pi}"></td>
+      ${cells}<td id="clpts-${pi}" style="font-weight:700;color:var(--gold2)">${fmt1(pts)}</td></tr>`;
+  }).join('');
+  const gameTotal = (c.games[gi]||[]).reduce((s,r)=>s+clPlayerPts(r),0);
+  document.getElementById('clGameBody').innerHTML = `
+    <div class="ctable-wrap"><table class="ctable">
+      <tr><th>Роль</th><th>Игрок</th>${CL_COLS.map(([k,n])=>`<th>${n}</th>`).join('')}<th>Очки</th></tr>
+      ${rows}
+      <tr class="total"><td colspan="${CL_COLS.length+2}">Сумма за карту ${gi+1}</td><td id="clTotal">${fmt1(gameTotal)}</td></tr>
+    </table></div>`;
+}
+function renderClResults(){
+  const r = calcClassic();
+  document.getElementById('clGrandTotal').textContent = fmt1(r.total);
+  const topN = Math.min(clTopN(), state.classic.games.length);
+  const cnt = pi => {
+    const arr = r.per.map(v=>v[pi]);
+    return new Set(arr.map((v,i)=>[v,i]).sort((a,b)=>b[0]-a[0]).slice(0,topN).map(x=>x[1]));
+  };
+  const head = `<tr><th>Игрок</th>${state.classic.games.map((_,i)=>`<th>Карта ${i+1}</th>`).join('')}<th>Серия (${topN} лучш.)</th></tr>`;
+  const rows = ROLES.map((role,pi)=>{
+    const c = cnt(pi);
+    const nm = state.classic.names[pi] ? ` <span style="color:var(--muted);font-size:11px">(${esc(state.classic.names[pi])})</span>` : '';
+    return `<tr><td>${role}${nm}</td>${r.per.map((v,i)=>`<td class="${c.has(i)?'':'strike'}">${c.has(i)?'<span class="star">★</span> ':''}${fmt1(v[pi])}</td>`).join('')}<td style="font-weight:700">${fmt1(r.series[pi])}</td></tr>`;
+  }).join('');
+  const trow = `<tr class="total"><td>Команда${clTourMult()!==1?` × ${clTourMult()*100}%`:''}</td>${r.gameTotals.map(v=>`<td>${fmt1(v)}</td>`).join('')}<td>${fmt1(r.total)}</td></tr>`;
+  document.getElementById('clSumTable').innerHTML = `<table>${head}${rows}${trow}</table>`;
+}
+function clFillExample(){
+  const c = state.classic;
+  c.names = ['Satanic','Nisha','Noticed','rue','not me'];
+  c.games = [
+    [{kills:9,deaths:2,assists:8,lh:720,gpm:660,xpm:680,stuns:14,heal:0,tower:2,roshan:1,fb:0,wards:0,stacks:2,runes:6,tf:78},
+     {kills:11,deaths:3,assists:9,lh:560,gpm:610,xpm:640,stuns:22,heal:0,tower:1,roshan:0,fb:1,wards:2,stacks:3,runes:14,tf:85},
+     {kills:5,deaths:4,assists:12,lh:480,gpm:540,xpm:600,stuns:31,heal:1500,tower:1,roshan:0,fb:0,wards:3,stacks:4,runes:5,tf:74},
+     {kills:2,deaths:6,assists:16,lh:120,gpm:320,xpm:420,stuns:44,heal:12000,tower:0,roshan:0,fb:0,wards:16,stacks:9,runes:4,tf:70},
+     {kills:1,deaths:7,assists:14,lh:80,gpm:290,xpm:380,stuns:38,heal:16000,tower:0,roshan:0,fb:0,wards:14,stacks:11,runes:3,tf:66}],
+    [{kills:12,deaths:1,assists:7,lh:810,gpm:700,xpm:730,stuns:11,heal:0,tower:3,roshan:2,fb:1,wards:0,stacks:2,runes:7,tf:88},
+     {kills:8,deaths:5,assists:10,lh:540,gpm:580,xpm:620,stuns:19,heal:0,tower:1,roshan:0,fb:0,wards:2,stacks:2,runes:11,tf:76},
+     {kills:4,deaths:6,assists:13,lh:430,gpm:500,xpm:560,stuns:28,heal:2000,tower:0,roshan:1,fb:0,wards:3,stacks:3,runes:5,tf:70},
+     {kills:3,deaths:5,assists:18,lh:110,gpm:330,xpm:430,stuns:40,heal:14000,tower:0,roshan:0,fb:0,wards:18,stacks:7,runes:4,tf:79},
+     {kills:2,deaths:4,assists:17,lh:90,gpm:300,xpm:400,stuns:35,heal:17000,tower:0,roshan:0,fb:0,wards:15,stacks:13,runes:3,tf:79}],
+    [{kills:6,deaths:5,assists:6,lh:540,gpm:590,xpm:610,stuns:12,heal:0,tower:1,roshan:0,fb:0,wards:0,stacks:1,runes:5,tf:66},
+     {kills:6,deaths:6,assists:8,lh:500,gpm:540,xpm:590,stuns:17,heal:0,tower:0,roshan:0,fb:0,wards:1,stacks:2,runes:9,tf:62},
+     {kills:3,deaths:7,assists:10,lh:380,gpm:470,xpm:520,stuns:24,heal:1800,tower:0,roshan:0,fb:0,wards:2,stacks:3,runes:4,tf:60},
+     {kills:1,deaths:8,assists:11,lh:100,gpm:280,xpm:370,stuns:33,heal:9000,tower:0,roshan:0,fb:0,wards:13,stacks:6,runes:2,tf:58},
+     {kills:1,deaths:9,assists:10,lh:70,gpm:260,xpm:350,stuns:30,heal:11000,tower:0,roshan:0,fb:0,wards:12,stacks:8,runes:3,tf:58}],
+  ];
+  c.curGame = 0;
+  renderClTabs(); renderClBody(); renderClResults(); save();
+}
+
+/* ==================== КОПИРОВАНИЕ ==================== */
+function copyText(t){
+  const done = ()=>toast('Скопировано ✔');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));
+  } else fallbackCopy(t,done);
+}
+function fallbackCopy(t,done){
+  const ta = document.createElement('textarea');
+  ta.value = t; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); done(); }catch(e){ toast('Не удалось скопировать'); }
+  document.body.removeChild(ta);
+}
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>el.classList.remove('show'), 1800);
+}
+function compSummaryText(){
+  const r = calcAll();
+  const g = state.games.length;
+  const lines = [`Фэнтези TI 2026 — итог серии (${g} ${g===1?'карта':(g<5?'карты':'карт')}, лучшие 2 в зачёте):`];
+  BIDS.forEach(bid=>{
+    const st = state.banners[bid];
+    lines.push(`${BANNERS[bid].name} (${st.names.filter(x=>x).join(' & ')||BANNERS[bid].ru}): ${fmt(r.series[bid])}`);
+  });
+  lines.push(`ИТОГО: ${fmt(r.total)}`);
+  const t = state.title;
+  lines.push(`Титул: ${t.prefix} ${t.prefixPct}% / ${t.suffix} ${t.suffixPct}%`);
+  return lines.join('\n');
+}
+function clSummaryText(){
+  const r = calcClassic();
+  const lines = ['Классическое фэнтези Valve — итог серии:'];
+  ROLES.forEach((role,pi)=>{
+    lines.push(`${role}${state.classic.names[pi]?` (${state.classic.names[pi]})`:''}: ${fmt1(r.series[pi])}`);
+  });
+  lines.push(`ИТОГО: ${fmt1(r.total)}${clTourMult()!==1?` (×${clTourMult()*100}%)`:''}`);
+  return lines.join('\n');
+}
+
+/* ==================== ОБЩЕЕ ОБНОВЛЕНИЕ ==================== */
+function refreshAll(){
+  renderBanners(); renderTitle(); renderGameTabs(); renderGameBody(); renderResults();
+}
+
+/* ==================== СОБЫТИЯ ==================== */
+document.querySelectorAll('nav.tabs button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    ['comp','classic','rules'].forEach(t=>document.getElementById('tab-'+t).hidden = t!==b.dataset.tab);
+  });
+});
+document.getElementById('stageSeg').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-stage]'); if(!b) return;
+  state.stage = b.dataset.stage;
+  document.querySelectorAll('#stageSeg button').forEach(x=>x.classList.toggle('active', x===b));
+  refreshAll(); save();
+});
+document.getElementById('bannerCards').addEventListener('change', e=>{
+  const t = e.target;
+  if(t.tagName==='SELECT'){
+    const d = t.dataset;
+    if(d.f==='stat') state.banners[d.b].emblems[+d.i].stat = t.value;
+    if(d.f==='tier') state.banners[d.b].emblems[+d.i].tier = +t.value;
+    if(d.f==='trait') state.banners[d.b].emblems[+d.i].trait = t.value;
+    refreshAll(); save();
+  }
+});
+document.getElementById('bannerCards').addEventListener('input', e=>{
+  const t = e.target;
+  if(t.tagName==='INPUT' && t.dataset.np!==undefined){
+    state.banners[t.dataset.b].names[+t.dataset.np] = t.value;
+    renderResults(); save();
+  }
+});
+document.getElementById('titleRow').addEventListener('change', e=>{
+  if(e.target.id==='selPrefix'){ state.title.prefix = e.target.value; const p=PREFIXES.find(x=>x.v===e.target.value); if(p) state.title.prefixPct=p.p; renderTitle(); }
+  if(e.target.id==='selSuffix'){ state.title.suffix = e.target.value; const s=SUFFIXES.find(x=>x.v===e.target.value); if(s) state.title.suffixPct=s.p; renderTitle(); }
+  renderResults(); save();
+});
+document.getElementById('titleRow').addEventListener('input', e=>{
+  if(e.target.id==='pfxPct'){ state.title.prefixPct = num(e.target.value); renderResults(); save(); }
+  if(e.target.id==='sfxPct'){ state.title.suffixPct = num(e.target.value); renderResults(); save(); }
+});
+document.getElementById('gameTabs').addEventListener('click', e=>{
+  const gt = e.target.closest('button.gtab');
+  if(gt){ state.curGame = +gt.dataset.gi; renderGameTabs(); renderGameBody(); renderResults(); save(); return; }
+  if(e.target.id==='addGame'){ state.games.push(defaultGame()); state.curGame = state.games.length-1; renderGameTabs(); renderGameBody(); renderResults(); save(); }
+  if(e.target.id==='delGame'){ state.games.splice(state.curGame,1); state.curGame = Math.min(state.curGame, state.games.length-1); renderGameTabs(); renderGameBody(); renderResults(); save(); }
+});
+document.getElementById('gameBody').addEventListener('input', e=>{
+  const t = e.target;
+  if((t.type==='number'||t.type==='checkbox') && t.dataset.b!==undefined){
+    const g = state.games[state.curGame];
+    if(!g[t.dataset.b][+t.dataset.p]) g[t.dataset.b][+t.dataset.p] = {};
+    g[t.dataset.b][+t.dataset.p][t.dataset.k] = t.type==='checkbox' ? (t.checked?1:0) : t.value;
+    renderResults(); save();
+  }
+  if(t.id==='pfxOn'){ state.games[state.curGame].prefixOn = t.checked; renderResults(); save(); }
+  if(t.id==='sfxOn'){ state.games[state.curGame].suffixOn = t.checked; renderResults(); save(); }
+});
+document.getElementById('btnExample').addEventListener('click', fillExample);
+document.getElementById('btnClearGames').addEventListener('click', ()=>{
+  state.games = [defaultGame()]; state.curGame = 0; refreshAll(); save(); toast('Карты очищены');
+});
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  if(confirm('Сбросить все настройки калькулятора?')){
+    localStorage.removeItem(LS_KEY); state = defaultState(); location.reload();
+  }
+});
+document.getElementById('btnCopy').addEventListener('click', ()=>copyText(compSummaryText()));
+document.getElementById('optTraitAdd').addEventListener('change', e=>{ state.opts.traitAdd = e.target.checked; renderResults(); save(); });
+document.getElementById('optTitleMult').addEventListener('change', e=>{ state.opts.titleMult = e.target.checked; renderResults(); save(); });
+
+/* --- классика: события --- */
+document.getElementById('clFormat').addEventListener('change', e=>{ state.classic.format = e.target.value; renderClResults(); save(); });
+document.getElementById('clTour').addEventListener('change', e=>{
+  state.classic.tour = e.target.value;
+  document.getElementById('clTourCustom').style.display = e.target.value==='custom'?'':'none';
+  renderClResults(); save();
+});
+document.getElementById('clTourCustom').addEventListener('input', e=>{ state.classic.tourCustom = num(e.target.value); renderClResults(); save(); });
+document.getElementById('clCoef').addEventListener('input', e=>{
+  const k = e.target.dataset.ck; if(k){ state.classic.coef[k] = num(e.target.value); renderClBody(); renderClResults(); save(); }
+});
+document.getElementById('clGameTabs').addEventListener('click', e=>{
+  const gt = e.target.closest('button.gtab');
+  if(gt){ state.classic.curGame = +gt.dataset.cgi; renderClTabs(); renderClBody(); save(); return; }
+  if(e.target.id==='clAddGame'){ state.classic.games.push(Array.from({length:5},()=>({}))); state.classic.curGame = state.classic.games.length-1; renderClTabs(); renderClBody(); renderClResults(); save(); }
+  if(e.target.id==='clDelGame'){ state.classic.games.splice(state.classic.curGame,1); state.classic.curGame = Math.min(state.classic.curGame, state.classic.games.length-1); renderClTabs(); renderClBody(); renderClResults(); save(); }
+});
+document.getElementById('clGameBody').addEventListener('input', e=>{
+  const t = e.target;
+  if(t.dataset.ck !== undefined && t.dataset.cp !== undefined){
+    const gi = state.classic.curGame, pi = +t.dataset.cp;
+    if(t.type==='checkbox') state.classic.games[gi][pi][t.dataset.ck] = t.checked ? 1 : 0;
+    else state.classic.games[gi][pi][t.dataset.ck] = t.value;
+    const cell = document.getElementById('clpts-'+pi);
+    if(cell) cell.textContent = fmt1(clPlayerPts(state.classic.games[gi][pi]));
+    const tot = document.getElementById('clTotal');
+    if(tot) tot.textContent = fmt1(state.classic.games[gi].reduce((s,r)=>s+clPlayerPts(r),0));
+    renderClResults(); save();
+  }
+  if(t.dataset.cname !== undefined){ state.classic.names[+t.dataset.cname] = t.value; renderClResults(); save(); }
+});
+document.getElementById('clExample').addEventListener('click', clFillExample);
+document.getElementById('clClear').addEventListener('click', ()=>{
+  state.classic.games = [Array.from({length:5},()=>({}))]; state.classic.curGame = 0;
+  renderClTabs(); renderClBody(); renderClResults(); save(); toast('Карты очищены');
+});
+document.getElementById('clCopy').addEventListener('click', ()=>copyText(clSummaryText()));
+
+/* ==================== СТАРТ ==================== */
+document.getElementById('clFormat').value = state.classic.format;
+document.getElementById('clTour').value = state.classic.tour;
+document.getElementById('clTourCustom').style.display = state.classic.tour==='custom' ? '' : 'none';
+document.getElementById('clTourCustom').value = state.classic.tourCustom;
+document.getElementById('optTraitAdd').checked = state.opts.traitAdd;
+document.getElementById('optTitleMult').checked = state.opts.titleMult;
+document.querySelectorAll('#stageSeg button').forEach(b=>b.classList.toggle('active', b.dataset.stage===state.stage));
+renderClCoef(); renderClTabs(); renderClBody(); renderClResults();
+refreshAll();
+</script>
+</body>
+</html>
