@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0e13" />
+<title>КУГО-СТАНТ — залипалка на электросамокатах</title>
+<meta name="description" content="Физическая залипалка: стант на электросамокатах и электропитбайках Kugoo, курьерские доставки, колхозные поля, тюнинг и комбо-трюки." />
+<link rel="stylesheet" href="css/style.css?v=2" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛴</text></svg>" />
+</head>
+<body>
+<div id="app">
+  <canvas id="game"></canvas>
+
+  <!-- ================= HUD ================= -->
+  <div id="hud">
+    <div class="hud-top">
+      <div class="hud-card" id="speedo">
+        <div>
+          <div class="lbl">Скорость</div>
+          <div class="val"><span id="hSpeed">0</span> <small>км/ч</small></div>
+        </div>
+      </div>
+      <div class="hud-card">
+        <div>
+          <div class="lbl">Батарея</div>
+          <div class="bar"><i id="hBatt" style="background:linear-gradient(90deg,#00e5a0,#7dd8ff)"></i></div>
+        </div>
+      </div>
+      <div class="hud-card">
+        <div>
+          <div class="lbl">Нитро</div>
+          <div class="bar"><i id="hBoost" style="background:linear-gradient(90deg,#ffcf3d,#ff7a3d)"></i></div>
+        </div>
+      </div>
+      <div class="hud-card" id="comboWrap">
+        <div class="lbl">Комбо <span id="comboMulti">x1</span></div>
+        <div id="comboVal">0</div>
+        <div class="bar"><i id="hCombo" style="background:linear-gradient(90deg,#ffcf3d,#00e5a0)"></i></div>
+      </div>
+      <div class="hud-card">
+        <div>
+          <div class="lbl">Бабки</div>
+          <div class="val"><span id="hMoney">0</span> <small>₽</small></div>
+        </div>
+      </div>
+      <div class="hud-card">
+        <div>
+          <div class="lbl">Посылки</div>
+          <div class="val">📦 <span id="hParcels">0</span></div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="btnPause" style="pointer-events:auto;padding:10px 14px">⏸ Пауза</button>
+    </div>
+
+    <div id="poseBadge">ПОЗА: <b id="hPose">ЕДЕМ</b></div>
+
+    <div id="progressWrap">
+      <div id="progressBar"><i></i><b style="left:100%"></b></div>
+      <div id="progressMeta"><span id="hDist">0 м</span><span id="hCoins">🪙 0</span><span>ФИНИШ</span></div>
+    </div>
+  </div>
+
+  <div id="toasts"></div>
+
+  <!-- ================= тач-управление ================= -->
+  <div id="touch">
+    <div class="tbtn" id="t-leanB">▲</div>
+    <div class="tbtn" id="t-leanF">▼</div>
+    <div class="tbtn wide" id="t-boost">НИТРО</div>
+    <div class="tbtn" id="t-back">◀</div>
+    <div class="tbtn" id="t-gas">▶</div>
+    <div class="tbtn wide" id="t-pose">ПОЗА</div>
+  </div>
+
+  <!-- ================= ЭКРАНЫ ================= -->
+  <div id="screens">
+
+    <!-- ГЛАВНОЕ МЕНЮ -->
+    <section class="screen" id="scr-menu">
+      <div class="wrap">
+        <div class="row" style="align-items:flex-end">
+          <div>
+            <h1 class="logo">КУГО<br>СТАНТ</h1>
+            <div style="display:inline-block;margin-top:6px;padding:4px 10px;border:1px solid var(--accent);border-radius:999px;color:var(--accent);font-weight:800;font-size:12px;letter-spacing:1px">СБОРКА 2 · 8 МОДЕЛЕЙ · ПОДБРОС ПРИ ВЫЛЕТЕ</div>
+            <p class="sub">Физическая залипалка про стант на электросамокатах и электропитбайках Kugoo.
+              Вози посылки, крути флипы над колхозными полями, разбирай ящики и прокачивай деку до состояния «не останавливается».</p>
+          </div>
+          <div class="spacer"></div>
+          <div class="money-pill">💰 <span id="mMoney">0</span> ₽</div>
+        </div>
+
+        <div class="row" style="margin-top:8px">
+          <button class="btn primary" id="btnPlay" style="font-size:20px;padding:18px 30px">▶ ЕХАТЬ</button>
+          <button class="btn" id="btnGarage">🛠 Гараж и тюнинг</button>
+          <button class="btn" id="btnLevels">🗺 Трассы</button>
+          <button class="btn ghost" id="btnHelp">❓ Управление</button>
+          <button class="btn ghost" id="btnSound">🔊 Звук</button>
+        </div>
+
+        <div class="section-title">Твой парк</div>
+        <div class="grid" id="menuFleet"></div>
+
+        <footer class="foot">Прогресс сохраняется в браузере. Сделано на чистой физике: пружинная подвеска, слип-модель колеса, рэгдолл при аварии.</footer>
+      </div>
+    </section>
+
+    <!-- ТРАССЫ -->
+    <section class="screen" id="scr-levels">
+      <div class="wrap">
+        <div class="row">
+          <h2 class="title">Трассы</h2>
+          <div class="spacer"></div>
+          <button class="btn ghost" data-back>← Назад</button>
+        </div>
+        <p class="hint">Каждая трасса — это дистанция с чекпоинтами, доставками и трамплинами. За первое прохождение платят вдвое больше.</p>
+        <div class="grid" id="levelGrid"></div>
+      </div>
+    </section>
+
+    <!-- ГАРАЖ / ТЮНИНГ -->
+    <section class="screen" id="scr-garage">
+      <div class="wrap">
+        <div class="row">
+          <h2 class="title">Гараж</h2>
+          <div class="money-pill">💰 <span id="gMoney">0</span> ₽</div>
+          <div class="spacer"></div>
+          <button class="btn ghost" data-back>← Назад</button>
+        </div>
+        <p class="hint">Выбери самокат, навесь тюнинг и раскрась курьера. Всё влияет на физику: тяга, сцепление, ход подвески, прочность рамы.</p>
+
+        <div class="tabs">
+          <div class="tab on" data-tab="fleet">🛴 Самокаты</div>
+          <div class="tab" data-tab="parts">⚙️ Железо</div>
+          <div class="tab" data-tab="style">🎨 Стиль</div>
+        </div>
+
+        <div id="tab-fleet">
+          <div class="grid" id="garageFleet"></div>
+        </div>
+
+        <div id="tab-parts" style="display:none">
+          <div id="partsList"></div>
+        </div>
+
+        <div id="tab-style" style="display:none">
+          <div id="styleList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- УПРАВЛЕНИЕ -->
+    <section class="screen" id="scr-help">
+      <div class="wrap">
+        <div class="row">
+          <h2 class="title">Управление</h2>
+          <div class="spacer"></div>
+          <button class="btn ghost" data-back>← Назад</button>
+        </div>
+        <p class="hint">На телефоне работают экранные кнопки. На клавиатуре — стрелки.</p>
+        <div class="keys">
+          <div class="key"><kbd>→</kbd> / <kbd>D</kbd> газ</div>
+          <div class="key"><kbd>←</kbd> / <kbd>A</kbd> тормоз и задний ход</div>
+          <div class="key"><kbd>↑</kbd> / <kbd>W</kbd> наклон назад (вилли, бэкфлип)</div>
+          <div class="key"><kbd>↓</kbd> / <kbd>S</kbd> наклон вперёд (стоппи, фронтфлип)</div>
+          <div class="key"><kbd>Space</kbd> нитро-буст</div>
+          <div class="key"><kbd>E</kbd> смена позы: присесть → без рук → супермен</div>
+          <div class="key"><kbd>R</kbd> рестарт с чекпоинта</div>
+          <div class="key"><kbd>Esc</kbd> / <kbd>P</kbd> пауза</div>
+        </div>
+        <div class="section-title">Как залипать</div>
+        <div class="card">
+          <p style="margin:0 0 8px;line-height:1.6">
+            • Комбо копится, пока ты в воздухе или в вилли. <b>Приземлился чисто</b> — комбо уходит в деньги и нитро. Упал — сгорело.<br>
+            • Чем длиннее цепочка трюков, тем выше множитель (до <b>x5</b>).<br>
+            • В воздухе жми <kbd>↑</kbd> для бэкфлипа и <kbd>↓</kbd> для фронтфлипа. Позы дают отдельные очки.<br>
+            • <b>📦 Заказ</b> — подбери жёлтую посылку и довези до зелёной точки выдачи. Быстрее приехал — больше premia.<br>
+            • Ящики ломаются, за «впротирку» с машиной дают бонус, за арматуру в котловане — минус самокат.<br>
+            • Батарея садится от газа, нитро жрёт её вчетверо быстрее. Отпускай газ — заряжается.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ПАУЗА -->
+    <section class="screen" id="scr-pause">
+      <div class="wrap" style="max-width:560px;margin-top:8vh">
+        <h2 class="title">Пауза</h2>
+        <p class="hint">Самокат стоит, курьер дышит.</p>
+        <div class="row">
+          <button class="btn primary" id="btnResume">▶ Продолжить</button>
+          <button class="btn" id="btnRestartCp">🚩 С чекпоинта</button>
+          <button class="btn danger" id="btnRestartAll">↺ Заново</button>
+          <button class="btn ghost" id="btnToMenu">🏠 В меню</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- АВАРИЯ -->
+    <section class="screen" id="scr-crash">
+      <div class="wrap" style="max-width:620px;margin-top:8vh">
+        <div class="crash-title">💥 АВРИЯ</div>
+        <p class="hint" id="crashReason" style="font-size:16px;color:#ffb3a7">—</p>
+        <div class="card" style="margin-bottom:16px"><div class="kv" id="crashStats"></div></div>
+        <div class="row">
+          <button class="btn primary" id="btnCrashCp">🚩 С чекпоинта (R)</button>
+          <button class="btn" id="btnCrashRestart">↺ Заново</button>
+          <button class="btn ghost" id="btnCrashMenu">🏠 В меню</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ФИНИШ -->
+    <section class="screen" id="scr-finish">
+      <div class="wrap" style="max-width:640px;margin-top:6vh">
+        <div style="font-size:13px;letter-spacing:3px;color:var(--accent);font-weight:900">ЗАЕЗД ЗАКРЫТ</div>
+        <h2 class="title" style="font-size:38px;margin-bottom:2px">Доставил. Красавчик.</h2>
+        <div class="big-result">+<span id="finMoney">0</span> ₽</div>
+        <div class="card" style="margin:14px 0 18px"><div class="kv" id="finStats"></div></div>
+        <div class="row">
+          <button class="btn primary" id="btnNextLevel">▶ Следующая трасса</button>
+          <button class="btn" id="btnAgain">↺ Ещё раз</button>
+          <button class="btn ghost" id="btnFinGarage">🛠 В гараж</button>
+          <button class="btn ghost" id="btnFinMenu">🏠 В меню</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script type="module" src="js/main.js?v=2"></script>
+</body>
+</html>
