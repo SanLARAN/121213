@@ -6,7 +6,7 @@ import { ACCENTS } from '../hooks/useSettings.js'
 import { SEMESTER, CATEGORIES } from '../data/groups.js'
 import { buildICS, semesterStats, subjectList, parityLabel, weekNumber, weekParity } from '../lib/schedule.js'
 
-export default function SettingsSheet({ open, onClose, settings, update, reset, group, onOpenGroups, now }) {
+export default function SettingsSheet({ open, onClose, settings, update, reset, group, onOpenGroups, onRestartOnboarding, now }) {
   const [showSubjects, setShowSubjects] = useState(false)
   const [exported, setExported] = useState(false)
 
@@ -31,6 +31,30 @@ export default function SettingsSheet({ open, onClose, settings, update, reset, 
 
   return (
     <Sheet open={open} onClose={onClose} title="Настройки" subtitle={SEMESTER.title}>
+      <Group title="Профиль">
+        <div className="row">
+          <span className="row-icon" style={{ background: 'var(--accent)' }}><IconGroup /></span>
+          <span className="row-main"><span className="row-label">Имя</span></span>
+          <span className="row-trailing">
+            <input
+              className="inline-input no-drag"
+              value={settings.name}
+              maxLength={24}
+              placeholder="не указано"
+              onChange={(e) => update({ name: e.target.value })}
+            />
+          </span>
+        </div>
+        <Row
+          icon={<IconReset />}
+          iconColor="#8E8E93"
+          label="Пройти настройку заново"
+          sub="Экран регистрации с выбором группы"
+          chevron
+          onClick={onRestartOnboarding}
+        />
+      </Group>
+
       <Group title="Группа">
         <Row
           icon={<IconGroup />}

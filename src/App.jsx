@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { GROUPS, SEMESTER } from './data/groups.js'
 import { useSettings } from './hooks/useSettings.js'
-import Segmented from './components/Segmented.jsx'
 import LessonCard from './components/LessonCard.jsx'
 import GroupSheet from './components/GroupSheet.jsx'
 import SettingsSheet from './components/SettingsSheet.jsx'
 import LessonSheet from './components/LessonSheet.jsx'
+import Onboarding from './components/Onboarding.jsx'
+import Dock from './components/Dock.jsx'
+import StatsView from './components/StatsView.jsx'
+import DotNumber from './components/DotNumber.jsx'
+import { TickBar } from './components/Ticks.jsx'
 import {
   DAY_NAMES, DAY_SHORT, MONTHS_NOM, addDays, findNextLesson, formatDateLong, formatDuration,
   isSemester, lessonStatus, lessonsForDate, minutesOf, mondayOf, parityLabel, relativeDayLabel,
@@ -37,25 +41,15 @@ export default function App() {
     () => lessonsForDate(group, selected, settings),
     [group, selected, settings],
   )
-
   const week = useMemo(() => weekDates(selected), [selected])
   const weekLessons = useMemo(
     () => week.map((d) => ({ date: d, lessons: lessonsForDate(group, d, settings) })),
     [week, group, settings],
   )
-  const weekCounts = useMemo(
-    () => week.map((d) => lessonsForDate(group, d, settings).length),
-    [week, group, settings],
-  )
-
-  const next = useMemo(
-    () => findNextLesson(group, now, settings),
-    [group, now, settings],
-  )
+  const next = useMemo(() => findNextLesson(group, now, settings), [group, now, settings])
 
   const isToday = sameDay(selected, now)
   const parity = weekParity(selected, settings.firstWeekParity)
-  const wNum = weekNumber(selected)
 
   const go = (days) => {
     setDir(days > 0 ? 1 : -1)
@@ -69,23 +63,21 @@ export default function App() {
 
   useEffect(() => {
     const onKey = (e) => {
-      if (groupsOpen || settingsOpen || detail) return
+      if (groupsOpen || settingsOpen || detail || !settings.onboarded) return
       if (e.target.closest?.('input')) return
       const step = view === 'week' ? 7 : 1
       if (e.key === 'ArrowLeft') go(-step)
       else if (e.key === 'ArrowRight') go(step)
       else if (e.key === 't' || e.key === 'е') goToday()
-      else if (e.key === 'w' || e.key === 'ц') setView((v) => (v === 'day' ? 'week' : 'day'))
+      else if (e.key === 'w' || e.key === 'ц') setView((v) => (v === 'week' ? 'day' : 'week'))
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }) // без deps: обработчик всегда видит актуальное состояние
+  })
 
-  const onTouchStart = (e) => {
-    touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
-  }
+  const onTouchStart = (e) => { touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY } }
   const onTouchEnd = (e) => {
-    if (!touch.current) return
+    if (!touch.current || view === 'stats') return
     const dx = e.changedTouches[0].clientX - touch.current.x
     const dy = e.changedTouches[0].clientY - touch.current.y
     touch.current = null
@@ -94,9 +86,16 @@ export default function App() {
     }
   }
 
-  const monthLabel = view === 'week'
-    ? monthRange(week)
-    : `${MONTHS_NOM[selected.getMonth()]} ${selected.getFullYear()}`
+  if (!settings.onboarded) {
+    return <Onboarding settings={settings} update={update} onFinish={() => setView('day')} />
+  }
+
+  const dayStart = dayLessons.length ? minutesOf(dayLessons[0].start) : 0
+  const dayEnd = dayLessons.length ? minutesOf(dayLessons[dayLessons.length - 1].end) : 0
+  const nowMin = now.getHours() * 60 + now.getMinutes()
+  const dayProgress = dayEnd > dayStart
+    ? Math.max(0, Math.min(1, (nowMin - dayStart) / (dayEnd - dayStart)))
+    : 0
 
   return (
     <div className="app">
@@ -104,88 +103,99 @@ export default function App() {
         <span className="blob b1" />
         <span className="blob b2" />
         <span className="blob b3" />
+        <span className="grain" />
       </div>
 
-      <header className="toolbar">
-        <button className="chip group-chip" onClick={() => setGroupsOpen(true)}>
-          <span className="chip-code">{group.code}</span>
-          <svg viewBox="0 0 12 8" width="9" height="6" aria-hidden="true">
-            <path d="M1 1.5L6 6.5l5-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-
-        <div className="toolbar-center">
-          <span className="toolbar-title">{monthLabel}</span>
-          <span className="toolbar-sub">{wNum}-я неделя · {parityLabel(parity)}</span>
+      <header className="topbar">
+        <div className="toppill glass">
+          <button className="group-chip" onClick={() => setGroupsOpen(true)}>
+            <span className="chip-code">{group.code}</span>
+            <svg viewBox="0 0 12 8" width="9" height="6" aria-hidden="true">
+              <path d="M1 1.5L6 6.5l5-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          <span className="toppill-title">
+            {view === 'stats' ? 'Сводка' : `${weekNumber(selected)} неделя · ${parityLabel(parity)}`}
+          </span>
+          <button className="avatar-btn" onClick={() => setSettingsOpen(true)} aria-label="Профиль">
+            {settings.name ? settings.name.trim()[0].toUpperCase() : '·'}
+          </button>
         </div>
-
-        <button className="icon-btn" onClick={() => setSettingsOpen(true)} aria-label="Настройки">
-          <svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true">
-            <path d="M8.3 2.6h3.4l.4 2a6 6 0 011.6.9l1.9-.7 1.7 3-1.5 1.3a6 6 0 010 1.8l1.5 1.3-1.7 3-1.9-.7a6 6 0 01-1.6.9l-.4 2H8.3l-.4-2a6 6 0 01-1.6-.9l-1.9.7-1.7-3 1.5-1.3a6 6 0 010-1.8L2.7 7.8l1.7-3 1.9.7a6 6 0 011.6-.9z"
-              fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-            <circle cx="10" cy="10" r="2.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
-          </svg>
-        </button>
       </header>
 
       <div className="hero">
+        <p className="hero-kicker">
+          {greeting(now)}{settings.name ? `, ${settings.name}` : ''}
+        </p>
         <div className="hero-row">
           <h1 className="large-title">
-            {view === 'day' ? relativeDayLabel(selected, now) : 'Неделя'}
+            {view === 'stats' ? 'Сводка' : view === 'week' ? 'Неделя' : relativeDayLabel(selected, now)}
           </h1>
-          {!isToday && (
+          {view !== 'stats' && !isToday && (
             <button className="today-btn" onClick={goToday}>Сегодня</button>
           )}
         </div>
-        <p className="hero-sub">
-          {view === 'day'
-            ? `${formatDateLong(selected)} · ${DAY_NAMES[selected.getDay()].toLowerCase()}`
-            : `${formatDateLong(week[0])} – ${formatDateLong(week[6])}`}
-          {' · '}
-          {plural(view === 'day' ? dayLessons.length : weekCounts.reduce((a, b) => a + b, 0))}
-        </p>
-
-        <Segmented
-          value={view}
-          onChange={setView}
-          options={[{ value: 'day', label: 'День' }, { value: 'week', label: 'Неделя' }]}
-        />
+        {view !== 'stats' && (
+          <p className="hero-sub">
+            {view === 'day'
+              ? `${formatDateLong(selected)} · ${DAY_NAMES[selected.getDay()].toLowerCase()}`
+              : `${formatDateLong(week[0])} – ${formatDateLong(week[6])}`}
+            {' · '}
+            {plural(view === 'day'
+              ? dayLessons.length
+              : weekLessons.reduce((a, w) => a + w.lessons.length, 0))}
+          </p>
+        )}
       </div>
 
-      <nav className="weekstrip">
-        <button className="nav-arrow" onClick={() => go(-7)} aria-label="Предыдущая неделя">
-          <Arrow dir="left" />
-        </button>
-        <div className="days">
-          {week.map((d, i) => {
-            const active = sameDay(d, selected)
-            const today = sameDay(d, now)
-            return (
-              <button
-                key={i}
-                className={`day-chip ${active ? 'is-active' : ''} ${today ? 'is-today' : ''}`}
-                onClick={() => { setDir(d > selected ? 1 : -1); setSelected(d); setView('day') }}
-              >
-                <span className="dc-dow">{DAY_SHORT[d.getDay()]}</span>
-                <span className="dc-num">{d.getDate()}</span>
-                <span className="dc-dots">
-                  {Array.from({ length: Math.min(weekCounts[i], 4) }).map((_, k) => (
-                    <span key={k} className="dc-dot" />
-                  ))}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-        <button className="nav-arrow" onClick={() => go(7)} aria-label="Следующая неделя">
-          <Arrow dir="right" />
-        </button>
-      </nav>
+      {view !== 'stats' && (
+        <nav className="weekstrip">
+          <button className="nav-arrow" onClick={() => go(-7)} aria-label="Предыдущая неделя"><Arrow dir="left" /></button>
+          <div className="days">
+            {week.map((d, i) => {
+              const active = sameDay(d, selected)
+              const today = sameDay(d, now)
+              const n = weekLessons[i].lessons.length
+              return (
+                <button
+                  key={i}
+                  className={`day-chip ${active ? 'is-active' : ''} ${today ? 'is-today' : ''}`}
+                  onClick={() => { setDir(d > selected ? 1 : -1); setSelected(d); setView('day') }}
+                >
+                  <span className="dc-dow">{DAY_SHORT[d.getDay()]}</span>
+                  <span className="dc-num">{d.getDate()}</span>
+                  <span className="dc-dots">
+                    {Array.from({ length: Math.min(n, 4) }).map((_, k) => <span key={k} className="dc-dot" />)}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+          <button className="nav-arrow" onClick={() => go(7)} aria-label="Следующая неделя"><Arrow dir="right" /></button>
+        </nav>
+      )}
 
       <main className="content" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-        {view === 'day' ? (
+        {view === 'stats' && (
+          <div className="pane from-right" key="stats">
+            <StatsView group={group} settings={settings} now={now} />
+          </div>
+        )}
+
+        {view === 'day' && (
           <div key={`d-${selected.toDateString()}`} className={`pane ${dir > 0 ? 'from-right' : 'from-left'}`}>
             {isToday && next && <NextUp next={next} now={now} onOpen={setDetail} />}
+            {isToday && dayLessons.length > 0 && (
+              <div className="daybar glass">
+                <span className="card-label">Учебный день</span>
+                <TickBar
+                  value={dayProgress}
+                  ticks={38}
+                  label={dayLessons[0].start}
+                  sub={dayLessons[dayLessons.length - 1].end}
+                />
+              </div>
+            )}
             <DayList
               date={selected}
               lessons={dayLessons}
@@ -195,7 +205,9 @@ export default function App() {
               emptyHint={!isSemester(selected) ? 'Вне периода семестра' : undefined}
             />
           </div>
-        ) : (
+        )}
+
+        {view === 'week' && (
           <div key={`w-${mondayOf(selected).toDateString()}`} className={`pane ${dir > 0 ? 'from-right' : 'from-left'}`}>
             {weekLessons
               .filter(({ lessons }) => settings.showEmptyDays || lessons.length > 0)
@@ -217,6 +229,8 @@ export default function App() {
         </footer>
       </main>
 
+      <Dock view={view} onView={setView} onSettings={() => setSettingsOpen(true)} />
+
       <GroupSheet
         open={groupsOpen}
         onClose={() => setGroupsOpen(false)}
@@ -232,6 +246,7 @@ export default function App() {
         group={group}
         now={now}
         onOpenGroups={() => { setSettingsOpen(false); setTimeout(() => setGroupsOpen(true), 220) }}
+        onRestartOnboarding={() => { setSettingsOpen(false); update({ onboarded: false }) }}
       />
       <LessonSheet item={detail} onClose={() => setDetail(null)} />
     </div>
@@ -240,15 +255,15 @@ export default function App() {
 
 function DayList({ date, lessons, now, settings, onOpen, emptyHint, compactEmpty }) {
   if (lessons.length === 0) {
-    return compactEmpty ? (
-      <p className="empty-inline">Занятий нет</p>
-    ) : (
-      <div className="empty">
-        <div className="empty-emoji">☕️</div>
-        <p>Занятий нет</p>
-        <span>{emptyHint || 'Свободный день — можно выдохнуть'}</span>
-      </div>
-    )
+    return compactEmpty
+      ? <p className="empty-inline">Занятий нет</p>
+      : (
+        <div className="empty glass">
+          <DotNumber value="00" size={6} gap={3} />
+          <p>Занятий нет</p>
+          <span>{emptyHint || 'Свободный день — можно выдохнуть'}</span>
+        </div>
+      )
   }
 
   const items = []
@@ -283,31 +298,45 @@ function DayList({ date, lessons, now, settings, onOpen, emptyHint, compactEmpty
 function NextUp({ next, now, onOpen }) {
   const { lesson, date, status } = next
   const live = status.state === 'now'
-  const when = live
-    ? `до конца ${formatDuration(status.endsIn)}`
-    : sameDay(date, now)
-      ? `через ${formatDuration(status.startsIn)}`
-      : `${relativeDayLabel(date, now).toLowerCase()} в ${lesson.start}`
+  const value = live ? status.endsIn : status.startsIn ?? 0
+  const sameDayLesson = sameDay(date, now)
+  const soon = sameDayLesson && value < 600
+  const big = live || soon ? formatClock(value) : lesson.start
+  const unit = live ? 'до конца' : soon ? 'через' : sameDayLesson ? 'сегодня' : relativeDayLabel(date, now).toLowerCase()
 
   return (
-    <button className="nextup" onClick={() => onOpen({ lesson, date })}>
-      <div className="nextup-label">
-        {live ? <><span className="dot live-dot" /> Идёт сейчас</> : 'Следующая пара'}
-      </div>
-      <div className="nextup-title">{lesson.title}</div>
-      <div className="nextup-meta">
-        {lesson.start}–{lesson.end} · {when}
-      </div>
-      <div className="nextup-place">
-        {[lesson.room, lesson.teacher].filter(Boolean).join(' · ')}
-      </div>
-      {live && (
-        <div className="nextup-progress">
-          <span style={{ width: `${Math.round(status.progress * 100)}%` }} />
-        </div>
-      )}
+    <button className="nextup glass" onClick={() => onOpen({ lesson, date })}>
+      <span className="glow c-accent" aria-hidden="true" />
+      <span className="nextup-head">
+        <span className="card-label">{live ? 'Идёт сейчас' : 'Следующая пара'}</span>
+        <span className="badge">{lesson.start}–{lesson.end}</span>
+      </span>
+
+      <span className="nextup-value">
+        <DotNumber value={big} size={7} gap={3} />
+        <span className="unit">{unit}</span>
+      </span>
+
+      <span className="nextup-title">{lesson.title}</span>
+      <span className="nextup-meta">{[lesson.room, lesson.teacher].filter(Boolean).join(' · ')}</span>
+
+      <TickBar value={live ? status.progress : 0.02} ticks={40} label={live ? 'начало' : 'старт'} sub={live ? 'конец' : lesson.end} />
     </button>
   )
+}
+
+function formatClock(min) {
+  const h = Math.floor(min / 60)
+  const m = min % 60
+  return h ? `${h}:${String(m).padStart(2, '0')}` : String(m)
+}
+
+function greeting(now) {
+  const h = now.getHours()
+  if (h < 5) return 'Доброй ночи'
+  if (h < 12) return 'Доброе утро'
+  if (h < 18) return 'Добрый день'
+  return 'Добрый вечер'
 }
 
 function Arrow({ dir }) {
@@ -316,13 +345,6 @@ function Arrow({ dir }) {
       <path d="M2 2l8 8-8 8" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
-}
-
-function monthRange(week) {
-  const a = week[0]
-  const b = week[6]
-  if (a.getMonth() === b.getMonth()) return `${MONTHS_NOM[a.getMonth()]} ${a.getFullYear()}`
-  return `${MONTHS_NOM[a.getMonth()].slice(0, 3)}. – ${MONTHS_NOM[b.getMonth()].slice(0, 3)}. ${b.getFullYear()}`
 }
 
 function plural(n) {

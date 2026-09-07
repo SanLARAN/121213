@@ -13,8 +13,10 @@ export const ACCENTS = {
 }
 
 export const DEFAULTS = {
+  onboarded: false,
+  name: '',
   groupId: DEFAULT_GROUP_ID,
-  appearance: 'system', // system | light | dark
+  appearance: 'dark', // system | light | dark
   accent: 'blue',
   subgroup: 0, // 0 = все, 1, 2
   hidePE: false,
@@ -55,7 +57,7 @@ export function useSettings() {
         || (settings.appearance === 'system' && mq.matches)
       document.documentElement.dataset.theme = dark ? 'dark' : 'light'
       document.querySelector('meta[name="theme-color"]')
-        ?.setAttribute('content', dark ? '#000000' : '#f2f2f7')
+        ?.setAttribute('content', dark ? '#06070a' : '#eceaf1')
     }
     apply()
     mq.addEventListener('change', apply)
