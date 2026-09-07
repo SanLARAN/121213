@@ -13,6 +13,10 @@
 - Прогресс шагами с dot-matrix счётчиком и живым предпросмотром «пар на неделе»
 - Запускается при первом входе, повторно — из настроек («Пройти настройку заново»)
 
+**Оформление**
+- Анимированная ASCII-halftone заставка (дизеринг матрицей Байера) на приветствии
+  онбординга и в пустых днях; отключается в настройках
+
 **Расписание**
 - Режимы **День**, **Неделя** и **Сводка**, нижний плавающий док
 - Полоса дней с точками-индикаторами занятости
@@ -47,10 +51,32 @@
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
-npm run build    # сборка в dist/
+npm run dev          # http://localhost:5173
+npm run build        # сборка в dist/
+npm run build:pages  # сборка в docs/ для GitHub Pages (base = /121213/)
 npm run preview
 ```
+
+## Публикация (GitHub Pages)
+
+Собранный сайт лежит в папке `docs/` прямо в репозитории — Pages раздаёт её без
+дополнительных прав и workflow-файлов.
+
+**Включить один раз:** Settings → Pages → Source: *Deploy from a branch* →
+Branch: `arena/01a07be2-121213`, папка `/docs` → Save.
+Через минуту сайт будет доступен по адресу **https://sanlaran.github.io/121213/**
+(можно установить на телефон как приложение — есть манифест и иконка).
+
+**После изменений** пересоберите папку и запушьте:
+
+```bash
+npm run build:pages && git add docs && git commit -m "rebuild" && git push
+```
+
+Если захотите автосборку через GitHub Actions — добавьте
+`.github/workflows/deploy.yml` со стандартным шагом
+`actions/upload-pages-artifact@v3` (путь `dist`, переменная `BASE_PATH=/121213/`)
+и переключите Source на *GitHub Actions*.
 
 ## Структура
 
@@ -63,6 +89,7 @@ src/
   components/
     Onboarding.jsx      # регистрация: имя, группа, подгруппа, оформление
     DotNumber.jsx       # точечно-матричные цифры 5×7
+    AsciiField.jsx      # ASCII-полутоновая графика (Байер-дизеринг)
     Ticks.jsx           # штриховые шкалы с жёлтым маркером
     Dock.jsx            # нижняя навигация
     StatsView.jsx       # экран «Сводка»
