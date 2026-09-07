@@ -1,0 +1,13 @@
+{
+  "name": "Расписание · КФУ",
+  "short_name": "Расписание",
+  "description": "Расписание занятий с выбором группы, подгруппы и настройками",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f2f2f7",
+  "theme_color": "#f2f2f7",
+  "lang": "ru",
+  "icons": [
+    { "src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
