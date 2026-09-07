@@ -132,6 +132,9 @@ export default function SettingsSheet({ open, onClose, settings, update, reset, 
         <Row icon={<IconPalette />} iconColor="#30D158" label="Цвета дисциплин" sub="Своя метка для каждого блока">
           <Switch checked={settings.colorfulCards} onChange={(v) => update({ colorfulCards: v })} label="Цвета дисциплин" />
         </Row>
+        <Row icon={<IconAscii />} iconColor="#1c1c1e" label="ASCII-графика" sub="Анимированный полутоновый постер">
+          <Switch checked={settings.asciiArt !== false} onChange={(v) => update({ asciiArt: v })} label="ASCII-графика" />
+        </Row>
       </Group>
 
       <Group title="Содержимое карточек">
@@ -243,4 +246,5 @@ const IconCompact = () => (<svg viewBox="0 0 20 20" width="14" height="14"><path
 const IconPalette = () => (<svg viewBox="0 0 20 20" width="14" height="14"><path d="M10 2.5a7.5 7.5 0 000 15c1 0 1.5-.7 1.5-1.5 0-1.2 1-1.7 2-1.7h1A3 3 0 0017.5 11c0-4.7-3.4-8.5-7.5-8.5z" {...s} /><circle cx="7" cy="8" r="1" fill="currentColor" /><circle cx="11" cy="6.5" r="1" fill="currentColor" /></svg>)
 const IconCalendar = () => (<svg viewBox="0 0 20 20" width="14" height="14"><rect x="3" y="4.5" width="14" height="13" rx="3" {...s} /><path d="M3 8.5h14M7 2.5v3M13 2.5v3" {...s} /></svg>)
 const IconExport = () => (<svg viewBox="0 0 20 20" width="14" height="14"><path d="M10 13V3m0 0L6.5 6.5M10 3l3.5 3.5" {...s} /><path d="M4 12v3.5A1.5 1.5 0 005.5 17h9a1.5 1.5 0 001.5-1.5V12" {...s} /></svg>)
+const IconAscii = () => (<svg viewBox="0 0 20 20" width="14" height="14"><g fill="currentColor"><circle cx="5" cy="6" r="1"/><circle cx="10" cy="6" r="1.4"/><circle cx="15" cy="6" r="1"/><circle cx="5" cy="10" r="1.4"/><circle cx="10" cy="10" r="2"/><circle cx="15" cy="10" r="1.4"/><circle cx="5" cy="14" r="1"/><circle cx="10" cy="14" r="1.4"/><circle cx="15" cy="14" r="1"/></g></svg>)
 const IconReset = () => (<svg viewBox="0 0 20 20" width="14" height="14"><path d="M16 10a6 6 0 11-2-4.5" {...s} /><path d="M16.5 3v3.5H13" {...s} /></svg>)

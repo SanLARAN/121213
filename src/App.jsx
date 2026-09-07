@@ -9,6 +9,7 @@ import Onboarding from './components/Onboarding.jsx'
 import Dock from './components/Dock.jsx'
 import StatsView from './components/StatsView.jsx'
 import DotNumber from './components/DotNumber.jsx'
+import AsciiField from './components/AsciiField.jsx'
 import { TickBar } from './components/Ticks.jsx'
 import {
   DAY_NAMES, DAY_SHORT, MONTHS_NOM, addDays, findNextLesson, formatDateLong, formatDuration,
@@ -263,7 +264,9 @@ function DayList({ date, lessons, now, settings, onOpen, emptyHint, compactEmpty
       ? <p className="empty-inline">Занятий нет</p>
       : (
         <div className="empty glass">
-          <DotNumber value="00" size={6} gap={3} />
+          {settings.asciiArt !== false
+            ? <div className="ascii-mini"><AsciiField cols={44} rows={11} fps={10} /></div>
+            : <DotNumber value="00" size={6} gap={3} />}
           <p>Занятий нет</p>
           <span>{emptyHint || 'Свободный день — можно выдохнуть'}</span>
         </div>

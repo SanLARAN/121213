@@ -26,6 +26,7 @@ export const DEFAULTS = {
   compact: false,
   showEmptyDays: true,
   colorfulCards: true,
+  asciiArt: true,
   firstWeekParity: SEMESTER.firstWeekParity,
   hiddenSubjects: [],
   aliases: {},

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { GROUPS } from '../data/groups.js'
 import { ACCENTS } from '../hooks/useSettings.js'
 import DotNumber from './DotNumber.jsx'
+import AsciiField from './AsciiField.jsx'
 import { TickBar } from './Ticks.jsx'
 import { lessonsForDate, weekDates, startOfDay, parseISO } from '../lib/schedule.js'
 import { semesterOf } from '../data/groups.js'
@@ -72,6 +73,10 @@ export default function Onboarding({ settings, update, onFinish }) {
       <main className={`onb-body pane ${dir > 0 ? 'from-right' : 'from-left'}`} key={step}>
         {step === 0 && (
           <div className="onb-pane">
+            <div className="ascii-poster">
+              <AsciiField cols={64} rows={20} animate={settings.asciiArt !== false} />
+              <span className="ascii-poster-tag">расписание · осень 2026</span>
+            </div>
             <h1 className="onb-title">Привет.<br />Давайте настроим<br />расписание.</h1>
             <p className="onb-text">
               Занятия, подгруппы и чётность недель — всё посчитается само.
