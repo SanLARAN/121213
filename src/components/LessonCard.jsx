@@ -25,6 +25,7 @@ export default function LessonCard({ lesson, status = {}, settings, onClick, ind
           {lesson.subgroup ? `${lesson.subgroup} подгруппа` : cat.label}
         </span>
         <span className="lesson-tags">
+          {lesson.kind && <span className={`badge kind k-${kindKey(lesson.kind)}`}>{lesson.kind}</span>}
           {lesson.online && <span className="badge online">ЦОР</span>}
           {lesson.parity && <span className="badge">{lesson.parity === 'odd' ? 'неч.' : 'чёт.'}</span>}
           {isNow && <span className="badge live"><i className="dot" /> сейчас</span>}
@@ -63,8 +64,16 @@ export default function LessonCard({ lesson, status = {}, settings, onClick, ind
   )
 }
 
+function kindKey(kind) {
+  if (kind === 'лек') return 'lec'
+  if (kind === 'пр') return 'pr'
+  return 'lab'
+}
+
 function shortBuilding(b = '') {
   if (b.includes('УНИКС')) return 'УНИКС'
+  if (b.includes('ДОТ')) return 'ДОТ'
+  if (b.includes('КСК')) return 'КСК ОЛИМП'
   const m = b.match(/№\s*(\d+)/)
   return m ? `зд. №${m[1]}` : b
 }

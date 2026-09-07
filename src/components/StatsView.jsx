@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { CATEGORIES, SEMESTER } from '../data/groups.js'
+import { CATEGORIES, semesterOf } from '../data/groups.js'
 import DotNumber from './DotNumber.jsx'
 import { TickBar, TickColumn } from './Ticks.jsx'
 import {
@@ -18,8 +18,9 @@ export default function StatsView({ group, settings, now }) {
       .map((d, i) => ({ d, n: weekLessons[i].length }))
       .sort((a, b) => b.n - a.n)[0]
 
-    const start = parseISO(SEMESTER.start)
-    const end = parseISO(SEMESTER.end)
+    const sem = semesterOf(group)
+    const start = parseISO(sem.start)
+    const end = parseISO(sem.end)
     const progress = Math.max(0, Math.min(1, (startOfDay(now) - start) / (end - start)))
 
     // сколько занятий уже позади

@@ -1,4 +1,4 @@
-import { SEMESTER } from '../data/groups.js'
+import { SEMESTER, semesterOf } from '../data/groups.js'
 
 export const DAY_NAMES = [
   'Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота',
@@ -50,15 +50,16 @@ export function sameDay(a, b) {
 }
 
 /** Номер учебной недели: 1 для недели, в которой начинается семестр */
-export function weekNumber(date) {
-  const base = mondayOf(parseISO(SEMESTER.start))
+export function weekNumber(date, sem = SEMESTER) {
+  const base = mondayOf(parseISO(sem.start))
   const cur = mondayOf(date)
   return Math.round((cur - base) / (7 * 24 * 3600 * 1000)) + 1
 }
 
 /** 'odd' | 'even' — чётность учебной недели */
-export function weekParity(date, firstWeekParity = SEMESTER.firstWeekParity) {
-  const n = weekNumber(date)
+export function weekParity(date, firstWeekParity, sem = SEMESTER) {
+  const n = weekNumber(date, sem)
+  firstWeekParity = firstWeekParity ?? sem.firstWeekParity
   const flip = (n - 1) % 2 === 1
   const base = firstWeekParity === 'odd' ? 'odd' : 'even'
   if (!flip) return base
@@ -81,10 +82,15 @@ export function occursOn(lesson, date, opts = {}) {
   const iso = toISO(date)
   const dow = (date.getDay() + 6) % 7 + 1 // 1 = Пн
   if (lesson.day !== dow) return false
+
+  // Формат КАИ: явный список дат
+  if (lesson.dates) return lesson.dates.includes(iso)
+
+  // Формат КФУ: период + чётность недели
   if (!inRange(iso, lesson.from, lesson.to)) return false
   if (lesson.except?.some(([a, b]) => inRange(iso, a, b))) return false
   if (lesson.parity) {
-    const p = weekParity(date, opts.firstWeekParity)
+    const p = weekParity(date, opts.firstWeekParity, opts.semester)
     if (p !== lesson.parity) return false
   }
   return true
@@ -94,8 +100,9 @@ export function occursOn(lesson, date, opts = {}) {
 export function lessonsForDate(group, date, settings = {}) {
   if (!group) return []
   const { subgroup = 0, hidePE = false, hiddenSubjects = [] } = settings
+  const opts = { ...settings, semester: semesterOf(group) }
   return group.lessons
-    .filter((l) => occursOn(l, date, settings))
+    .filter((l) => occursOn(l, date, opts))
     .filter((l) => (subgroup ? l.subgroup === null || l.subgroup === subgroup : true))
     .filter((l) => (hidePE ? l.category !== 'sport' : true))
     .filter((l) => !hiddenSubjects.includes(l.title))
@@ -148,9 +155,9 @@ export function relativeDayLabel(date, now) {
   return DAY_NAMES[date.getDay()]
 }
 
-export function isSemester(date) {
+export function isSemester(date, sem = SEMESTER) {
   const iso = toISO(date)
-  return iso >= SEMESTER.start && iso <= SEMESTER.end
+  return iso >= sem.start && iso <= sem.end
 }
 
 /** Ближайшая пара начиная с текущего момента (ищем вперёд до 14 дней) */
@@ -169,8 +176,9 @@ export function findNextLesson(group, now, settings) {
 
 /** Статистика по семестру для экрана настроек / сводки */
 export function semesterStats(group, settings) {
-  const start = parseISO(SEMESTER.start)
-  const end = parseISO(SEMESTER.end)
+  const sem = semesterOf(group)
+  const start = parseISO(sem.start)
+  const end = parseISO(sem.end)
   let total = 0
   let minutes = 0
   const bySubject = new Map()
@@ -206,8 +214,9 @@ function escapeICS(s = '') {
 }
 
 export function buildICS(group, settings) {
-  const start = parseISO(SEMESTER.start)
-  const end = parseISO(SEMESTER.end)
+  const sem = semesterOf(group)
+  const start = parseISO(sem.start)
+  const end = parseISO(sem.end)
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',

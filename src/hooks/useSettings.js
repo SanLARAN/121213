@@ -28,6 +28,7 @@ export const DEFAULTS = {
   colorfulCards: true,
   firstWeekParity: SEMESTER.firstWeekParity,
   hiddenSubjects: [],
+  aliases: {},
 }
 
 function read() {

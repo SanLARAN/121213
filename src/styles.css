@@ -1117,3 +1117,47 @@ button { border: none; background: none; cursor: pointer; -webkit-tap-highlight-
 }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 10px; }
+
+/* ── Фильтр по вузам ────────────────────────────────────── */
+.filter-chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 18px; }
+.filter-chip {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-brd);
+  background: var(--glass-bg);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  transition: transform 0.22s var(--spring), color 0.2s, background 0.25s, border-color 0.25s;
+}
+.filter-chip:active { transform: scale(0.94); }
+.filter-chip.is-active {
+  background: var(--ink);
+  border-color: transparent;
+  color: var(--bg);
+}
+
+/* ── Вид занятия ────────────────────────────────────────── */
+.badge.kind { text-transform: lowercase; font-weight: 600; letter-spacing: 0.2px; }
+.badge.k-lec { color: #7aa8ff; border-color: color-mix(in srgb, #7aa8ff 45%, transparent); }
+.badge.k-pr { color: #ffbf6b; border-color: color-mix(in srgb, #ffbf6b 45%, transparent); }
+.badge.k-lab { color: #4fe0c4; border-color: color-mix(in srgb, #4fe0c4 45%, transparent); }
+
+/* ── Список дат занятия ─────────────────────────────────── */
+.dates-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+.dates-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.date-chip {
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--glass-bg-2);
+  border: 1px solid transparent;
+  font-size: 11px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.date-chip.is-active {
+  color: var(--marker);
+  border-color: color-mix(in srgb, var(--marker) 50%, transparent);
+}
+
+.pick:disabled, .pick.is-off { opacity: 0.35; cursor: default; }

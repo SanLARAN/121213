@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { GROUPS, SEMESTER } from './data/groups.js'
+import { GROUPS, semesterOf } from './data/groups.js'
 import { useSettings } from './hooks/useSettings.js'
 import LessonCard from './components/LessonCard.jsx'
 import GroupSheet from './components/GroupSheet.jsx'
@@ -48,8 +48,10 @@ export default function App() {
   )
   const next = useMemo(() => findNextLesson(group, now, settings), [group, now, settings])
 
+  const sem = semesterOf(group)
+  const hasParity = useMemo(() => group.lessons.some((l) => l.parity), [group])
   const isToday = sameDay(selected, now)
-  const parity = weekParity(selected, settings.firstWeekParity)
+  const parity = weekParity(selected, settings.firstWeekParity, sem)
 
   const go = (days) => {
     setDir(days > 0 ? 1 : -1)
@@ -109,13 +111,15 @@ export default function App() {
       <header className="topbar">
         <div className="toppill glass">
           <button className="group-chip" onClick={() => setGroupsOpen(true)}>
-            <span className="chip-code">{group.code}</span>
+            <span className="chip-code">{settings.aliases?.[group.id] || group.code}</span>
             <svg viewBox="0 0 12 8" width="9" height="6" aria-hidden="true">
               <path d="M1 1.5L6 6.5l5-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
           <span className="toppill-title">
-            {view === 'stats' ? 'Сводка' : `${weekNumber(selected)} неделя · ${parityLabel(parity)}`}
+            {view === 'stats'
+              ? group.university
+              : `${weekNumber(selected, sem)} неделя${hasParity ? ` · ${parityLabel(parity)}` : ''}`}
           </span>
           <button className="avatar-btn" onClick={() => setSettingsOpen(true)} aria-label="Профиль">
             {settings.name ? settings.name.trim()[0].toUpperCase() : '·'}
@@ -202,7 +206,7 @@ export default function App() {
               now={now}
               settings={settings}
               onOpen={setDetail}
-              emptyHint={!isSemester(selected) ? 'Вне периода семестра' : undefined}
+              emptyHint={!isSemester(selected, sem) ? 'Вне периода семестра' : undefined}
             />
           </div>
         )}
@@ -224,7 +228,7 @@ export default function App() {
         )}
 
         <footer className="foot">
-          {SEMESTER.title} · данные kpfu.ru
+          {sem.title} · {group.university === 'КНИТУ-КАИ' ? 'данные kai.ru' : 'данные kpfu.ru'}
           {group.demo && <><br />Демонстрационные данные группы</>}
         </footer>
       </main>

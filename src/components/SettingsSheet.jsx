@@ -3,7 +3,7 @@ import Sheet from './Sheet.jsx'
 import Segmented from './Segmented.jsx'
 import { Group, Row, Switch } from './Rows.jsx'
 import { ACCENTS } from '../hooks/useSettings.js'
-import { SEMESTER, CATEGORIES } from '../data/groups.js'
+import { CATEGORIES, semesterOf } from '../data/groups.js'
 import { buildICS, semesterStats, subjectList, parityLabel, weekNumber, weekParity } from '../lib/schedule.js'
 
 export default function SettingsSheet({ open, onClose, settings, update, reset, group, onOpenGroups, onRestartOnboarding, now }) {
@@ -15,6 +15,8 @@ export default function SettingsSheet({ open, onClose, settings, update, reset, 
     [open, group, settings],
   )
   const subjects = useMemo(() => subjectList(group), [group])
+  const sem = semesterOf(group)
+  const hasParity = useMemo(() => group.lessons.some((l) => l.parity), [group])
 
   const exportICS = () => {
     const { text } = buildICS(group, settings)
@@ -30,7 +32,7 @@ export default function SettingsSheet({ open, onClose, settings, update, reset, 
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title="Настройки" subtitle={SEMESTER.title}>
+    <Sheet open={open} onClose={onClose} title="Настройки" subtitle={`${group.university} · ${sem.title}`}>
       <Group title="Профиль">
         <div className="row">
           <span className="row-icon" style={{ background: 'var(--accent)' }}><IconGroup /></span>
@@ -59,11 +61,28 @@ export default function SettingsSheet({ open, onClose, settings, update, reset, 
         <Row
           icon={<IconGroup />}
           iconColor="var(--accent)"
-          label={group.code}
+          label={`${group.university} · ${group.code}`}
           sub={`${group.title} · ${group.course} курс`}
           chevron
           onClick={onOpenGroups}
         />
+        <div className="row">
+          <span className="row-main">
+            <span className="row-label">Своё название группы</span>
+            <span className="row-sub">Как показывать её в шапке</span>
+          </span>
+          <span className="row-trailing">
+            <input
+              className="inline-input no-drag"
+              value={settings.aliases?.[group.id] ?? ''}
+              maxLength={14}
+              placeholder={group.code}
+              onChange={(e) => update((cur) => ({
+                aliases: { ...cur.aliases, [group.id]: e.target.value },
+              }))}
+            />
+          </span>
+        </div>
         <Row icon={<IconSplit />} iconColor="#AF52DE" label="Подгруппа" sub="Показывать только свои занятия">
           <Segmented
             size="sm"
@@ -135,7 +154,9 @@ export default function SettingsSheet({ open, onClose, settings, update, reset, 
 
       <Group
         title="Учебная неделя"
-        footer={`Сейчас идёт ${weekNumber(now)}-я учебная неделя — ${parityLabel(weekParity(now, settings.firstWeekParity))}. Если в деканате нумеруют иначе, переключите чётность первой недели.`}
+        footer={hasParity
+          ? `Сейчас идёт ${weekNumber(now, sem)}-я учебная неделя — ${parityLabel(weekParity(now, settings.firstWeekParity, sem))}. Если в деканате нумеруют иначе, переключите чётность первой недели.`
+          : `Сейчас идёт ${weekNumber(now, sem)}-я учебная неделя. В расписании этой группы занятия заданы конкретными датами, поэтому чётность ни на что не влияет.`}
       >
         <Row icon={<IconCalendar />} iconColor="#FF3B30" label="Первая неделя семестра">
           <Segmented
@@ -201,8 +222,8 @@ export default function SettingsSheet({ open, onClose, settings, update, reset, 
       </Group>
 
       <p className="about">
-        Расписание · {SEMESTER.title}<br />
-        Данные: kpfu.ru
+        Расписание · {sem.title}<br />
+        Данные: kpfu.ru · kai.ru
       </p>
     </Sheet>
   )

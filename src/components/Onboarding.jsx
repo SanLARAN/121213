@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { GROUPS } from '../data/groups.js'
 import { ACCENTS } from '../hooks/useSettings.js'
 import DotNumber from './DotNumber.jsx'
 import { TickBar } from './Ticks.jsx'
-import { lessonsForDate, weekDates, startOfDay } from '../lib/schedule.js'
+import { lessonsForDate, weekDates, startOfDay, parseISO } from '../lib/schedule.js'
+import { semesterOf } from '../data/groups.js'
 
 const STEPS = ['Профиль', 'Группа', 'Подгруппа', 'Оформление', 'Готово']
 
@@ -13,21 +14,31 @@ export default function Onboarding({ settings, update, onFinish }) {
   const [groupId, setGroupId] = useState(settings.groupId)
   const [subgroup, setSubgroup] = useState(settings.subgroup)
   const [q, setQ] = useState('')
+  const [uni, setUni] = useState('все')
   const [dir, setDir] = useState(1)
+
+  const UNIS = useMemo(() => ['все', ...new Set(GROUPS.map((g) => g.university))], [])
 
   const group = GROUPS.find((g) => g.id === groupId) ?? GROUPS[0]
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase()
-    if (!s) return GROUPS
-    return GROUPS.filter((g) => `${g.code} ${g.title} ${g.institute} ${g.course}`.toLowerCase().includes(s))
-  }, [q])
+    return GROUPS
+      .filter((g) => uni === 'все' || g.university === uni)
+      .filter((g) => !s || `${g.code} ${g.title} ${g.institute} ${g.university} ${g.course}`.toLowerCase().includes(s))
+  }, [q, uni])
+
+  const hasSubgroups = useMemo(() => group.lessons.some((l) => l.subgroup), [group])
 
   const weekCount = useMemo(() => {
     const st = { subgroup, hidePE: false, hiddenSubjects: [], firstWeekParity: settings.firstWeekParity }
-    return weekDates(startOfDay(new Date('2026-09-07T12:00:00')))
+    return weekDates(startOfDay(parseISO(semesterOf(group).start)))
       .reduce((sum, d) => sum + lessonsForDate(group, d, st).length, 0)
   }, [group, subgroup, settings.firstWeekParity])
+
+  useEffect(() => {
+    if (!hasSubgroups && subgroup !== 0) setSubgroup(0)
+  }, [hasSubgroups, subgroup])
 
   const go = (n) => {
     setDir(n > step ? 1 : -1)
@@ -89,8 +100,19 @@ export default function Onboarding({ settings, update, onFinish }) {
                 <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" strokeWidth="2" />
                 <path d="M11 11l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Код группы или направление" />
+              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Код группы, вуз или направление" />
               {q && <button className="search-clear" onClick={() => setQ('')} aria-label="Очистить">×</button>}
+            </div>
+            <div className="filter-chips">
+              {UNIS.map((u) => (
+                <button
+                  key={u}
+                  className={`filter-chip ${uni === u ? 'is-active' : ''}`}
+                  onClick={() => setUni(u)}
+                >
+                  {u === 'все' ? 'Все вузы' : u}
+                </button>
+              ))}
             </div>
             <div className="onb-groups">
               {filtered.map((g) => (
@@ -102,7 +124,7 @@ export default function Onboarding({ settings, update, onFinish }) {
                   <span className="gi-code">{g.code}</span>
                   <span className="gi-main">
                     <b>{g.title}</b>
-                    <span>{g.course} курс · {g.institute}</span>
+                    <span>{g.university} · {g.course} курс</span>
                   </span>
                   {g.demo && <span className="badge subtle">демо</span>}
                   {g.id === groupId && <CheckIcon />}
@@ -117,8 +139,9 @@ export default function Onboarding({ settings, update, onFinish }) {
           <div className="onb-pane">
             <h1 className="onb-title">Подгруппа</h1>
             <p className="onb-text">
-              Языковые пары идут по подгруппам. Выберите свою — в расписании
-              останутся только нужные занятия.
+              {hasSubgroups
+                ? 'Языковые пары идут по подгруппам. Выберите свою — в расписании останутся только нужные занятия.'
+                : `В расписании группы ${group.code} деления на подгруппы нет — этот шаг можно пропустить.`}
             </p>
             <div className="pick-grid">
               {[
@@ -128,7 +151,8 @@ export default function Onboarding({ settings, update, onFinish }) {
               ].map((o) => (
                 <button
                   key={o.v}
-                  className={`pick ${subgroup === o.v ? 'is-active' : ''}`}
+                  className={`pick ${subgroup === o.v ? 'is-active' : ''} ${!hasSubgroups && o.v ? 'is-off' : ''}`}
+                  disabled={!hasSubgroups && o.v !== 0}
                   onClick={() => setSubgroup(o.v)}
                 >
                   <span className="pick-num">{o.t}</span>
@@ -185,8 +209,13 @@ export default function Onboarding({ settings, update, onFinish }) {
           <div className="onb-pane">
             <h1 className="onb-title">{name ? `${name}, всё готово` : 'Всё готово'}</h1>
             <div className="summary">
+              <SummaryRow label="Вуз" value={group.university} sub={group.institute} />
               <SummaryRow label="Группа" value={group.code} sub={group.title} />
-              <SummaryRow label="Подгруппа" value={subgroup ? `${subgroup}-я` : 'все'} sub={subgroup ? 'фильтр включён' : 'без фильтра'} />
+              <SummaryRow
+                label="Подгруппа"
+                value={subgroup ? `${subgroup}-я` : '—'}
+                sub={subgroup ? 'фильтр включён' : hasSubgroups ? 'показываются все' : 'в группе нет подгрупп'}
+              />
               <SummaryRow label="Пар в неделю" value={String(weekCount)} sub="осенний семестр" />
             </div>
             <p className="onb-hint">

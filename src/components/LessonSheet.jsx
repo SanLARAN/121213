@@ -52,6 +52,7 @@ export default function LessonSheet({ item, onClose }) {
             </div>
             <div className="detail-dur">
               {formatDuration(minutesOf(lesson.end) - minutesOf(lesson.start))} · {cat?.label}
+              {lesson.kind ? ` · ${lesson.kindFull}` : ''}
             </div>
           </div>
 
@@ -59,9 +60,15 @@ export default function LessonSheet({ item, onClose }) {
             {lesson.teacher && <DetailRow label="Преподаватель" value={lesson.teacher} />}
             <DetailRow label="Место" value={[lesson.building, lesson.room].filter(Boolean).join(', ')} />
             <DetailRow label="Подгруппа" value={lesson.subgroup ? `${lesson.subgroup}-я` : 'вся группа'} />
+            {lesson.kindFull && <DetailRow label="Вид занятия" value={lesson.kindFull} />}
+            {lesson.department && <DetailRow label="Кафедра" value={lesson.department} />}
             <DetailRow
               label="Периодичность"
-              value={lesson.parity ? (lesson.parity === 'odd' ? 'по нечётным неделям' : 'по чётным неделям') : 'каждую неделю'}
+              value={lesson.dates
+                ? `${lesson.dates.length} занятий по датам`
+                : lesson.parity
+                  ? (lesson.parity === 'odd' ? 'по нечётным неделям' : 'по чётным неделям')
+                  : 'каждую неделю'}
             />
             <DetailRow
               label="Период"
@@ -71,6 +78,18 @@ export default function LessonSheet({ item, onClose }) {
               <DetailRow key={a} label="Исключение" value={`${formatDateLong(parseISO(a))} – ${formatDateLong(parseISO(b))}`} />
             ))}
             {lesson.note && <DetailRow label="Примечание" value={lesson.note} />}
+            {lesson.dates && (
+              <div className="row dates-row">
+                <span className="row-main"><span className="row-label">Даты</span></span>
+                <span className="dates-list">
+                  {lesson.dates.map((d) => (
+                    <span key={d} className={`date-chip ${d === toISO(date) ? 'is-active' : ''}`}>
+                      {d.slice(8)}.{d.slice(5, 7)}
+                    </span>
+                  ))}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="detail-actions">

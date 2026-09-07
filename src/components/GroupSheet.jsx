@@ -2,25 +2,29 @@ import { useMemo, useState } from 'react'
 import Sheet from './Sheet.jsx'
 import { GROUPS } from '../data/groups.js'
 
+const UNIS = ['все', ...new Set(GROUPS.map((g) => g.university))]
+
 export default function GroupSheet({ open, onClose, value, onSelect }) {
   const [q, setQ] = useState('')
+  const [uni, setUni] = useState('все')
 
-  const filtered = useMemo(() => {
+  const sections = useMemo(() => {
     const s = q.trim().toLowerCase()
-    const list = s
-      ? GROUPS.filter((g) => [g.code, g.title, g.institute, String(g.course)]
+    const list = GROUPS
+      .filter((g) => uni === 'все' || g.university === uni)
+      .filter((g) => !s || [g.code, g.title, g.institute, g.university, String(g.course)]
         .join(' ').toLowerCase().includes(s))
-      : GROUPS
-    const byInstitute = new Map()
+    const map = new Map()
     for (const g of list) {
-      if (!byInstitute.has(g.institute)) byInstitute.set(g.institute, [])
-      byInstitute.get(g.institute).push(g)
+      const key = `${g.university} · ${g.institute}`
+      if (!map.has(key)) map.set(key, [])
+      map.get(key).push(g)
     }
-    return [...byInstitute.entries()]
-  }, [q])
+    return [...map.entries()]
+  }, [q, uni])
 
   return (
-    <Sheet open={open} onClose={onClose} title="Выбор группы" subtitle="Институт международных отношений, КФУ">
+    <Sheet open={open} onClose={onClose} title="Выбор группы" subtitle="КФУ и КНИТУ-КАИ">
       <div className="search no-drag">
         <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
           <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" strokeWidth="2" />
@@ -29,24 +33,34 @@ export default function GroupSheet({ open, onClose, value, onSelect }) {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Группа, направление, курс"
+          placeholder="Группа, вуз, направление"
           aria-label="Поиск группы"
         />
-        {q && (
-          <button className="search-clear" onClick={() => setQ('')} aria-label="Очистить">×</button>
-        )}
+        {q && <button className="search-clear" onClick={() => setQ('')} aria-label="Очистить">×</button>}
       </div>
 
-      {filtered.length === 0 && (
+      <div className="filter-chips no-drag">
+        {UNIS.map((u) => (
+          <button
+            key={u}
+            className={`filter-chip ${uni === u ? 'is-active' : ''}`}
+            onClick={() => setUni(u)}
+          >
+            {u === 'все' ? 'Все вузы' : u}
+          </button>
+        ))}
+      </div>
+
+      {sections.length === 0 && (
         <div className="empty small">
           <p>Ничего не найдено</p>
-          <span>Попробуйте другой запрос — например «04.1»</span>
+          <span>Попробуйте другой запрос — например «КАИ»</span>
         </div>
       )}
 
-      {filtered.map(([institute, groups]) => (
-        <section className="list-group" key={institute}>
-          <h3 className="list-title">{institute}</h3>
+      {sections.map(([title, groups]) => (
+        <section className="list-group" key={title}>
+          <h3 className="list-title">{title}</h3>
           <div className="list">
             {groups.map((g) => (
               <button
@@ -77,8 +91,8 @@ export default function GroupSheet({ open, onClose, value, onSelect }) {
       ))}
 
       <p className="list-footer">
-        Расписание группы 04.1-101 загружено с сайта КФУ. Остальные группы добавлены
-        для демонстрации переключения — их данные условные.
+        Расписания групп 04.1-101 (КФУ) и 4101 (КНИТУ-КАИ) перенесены с сайтов вузов.
+        Группы 04.1-108 и 04.1-204 — демонстрационные.
       </p>
     </Sheet>
   )
